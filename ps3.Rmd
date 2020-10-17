@@ -6,22 +6,108 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
+# if you need to install the packages 
+# install.packages("broom")
+# install.packages("tidyverse")
+# install.packages("tinytex")
+# install.packages("readr")
+# install.packages("ggplot2")
+library(broom)
+library(rstanarm)
 library(tidyverse)
 library(readr)
 library(tinytex)
 library(ggplot2)
+
 gss <- read_csv("gss.csv")
 ```
 
-## Abstract
-## Introduction
-## Data
+# Abstract
 
-## Model
-## Results
-## Discussion
+*********add more**************
+Through examining family income, household size, marital status, and province, we were able to estimate the probability of a family choosing to rent over purchasing a home based on these predictors.
+
+# Introduction
+
+In this report, the General Social Survey  was used to look the socio-demographic trends of families in Canada.
+The General Social Survey (2017) is a voluntary cross-sectional survey conducted by Statistics Canada that collected data on socioeconomic characteristics such as family origins and parental history. The survey is used to provide policy makers and analysts with statistical information that can be used for planning health and social service programs. The data set contains 20602 observations, and we chose to look at the variables family income, the family size, whether the respondent's family rents or owns, the marital status of the respondent, and the province in which the respondent resides. The purpose of this study is to look different factors that might effect a family choosing whether to rent or buy a home in Canada, and fit a model to estimate the proportion of families that choose to rent.
+
+The outcome we are trying to estimate (the proportion of families that choose to rent), is a binary value, with only two possible outcomes. As a result, a multilevel regression model can be fitted to the data:
+y = owning or renting a home
+y = 1; The respondent's family rents a home
+y = 0; The respondent's family has purchased their home
+
+$$Pr(y_i = 1) = \mbox{logit}^{-1}\left(\alpha^{age}_{a[i]} + \alpha^{marital}_{m[i]} + \alpha^{size}_{s[i]} + \alpha^{income}_{n[i]}\right) $$
+where the $\alpha$ are province, family income, size of household,  and marital status, respectively. These are modeled as:
+$$\alpha^{variable}_i \sim N(0, \sigma_{variable})\mbox{ for }i = 1, 2, \ldots, I$$,
+
+Using multilevel  logistic regression with post-stratification, we are able to ____________________.
+# Data
+## key features
+- education
+- ethnic diversity
+- housing
+
+- age range: 15 - 80
+
+Through tidying the data and making the variable own_rent a binary outcome variable, this was the resulting data frame:
+```{r, echo = FALSE}
+## retrieving variables needed
+data_raw <- gss %>% select(age, marital_status, income_family, own_rent, hh_size, province)
+
+## filter out any possible NA values
+
+cleaned_dat <- data_raw %>% filter(marital_status != "NA", province  != "NA", own_rent  != "NA", hh_size != "NA", own_rent != "Don't know")
+
+## set training and testing data using the variable we are trying to predict to check generalization error
+set.seed(123)  # for reproducibility
+cleaned_data <- cleaned_dat %>% mutate(own_rent = ifelse(own_rent == "Rented, even if no cash rent is paid", 1, 0))
+```
+
+## Methodology
+
+- Surveyed approximately 43,000 non-institutionalized people, 15 years of age and older, living in Canada (population)
+- Used land line and cellular telephone numbers from the Census other Statistics Canada administrative sources (sampling frame)
+- cross-sectional design (collected at on specific point in time)
+
+- using stratified design with probability sampling
+- 10 provinces were divided into stratum. resulted in 27 strata in total. 
+
+- sample collected from one randomly selected household member
+- cost? ****
+
+- non response:
+  - to reduce nonresponse bias, survey weights were adjusted to account for nonresponse 
+  - household characteristics such as  household composition were taken from 2016 census data and used to adjust non-response
+
+## strengths
+  -  survey kept confidential under Statistics Act of Statistics Canada and  under this act is required to keep the respondent notified of what information is being collected and allows the respondent to object to the sharing of the information obtained by the survey as long as they give notice
+  - data was enhanced by combining responses with information from personal and household tax data, gives more information to work with
+  - minimum sample size used to ensure an acceptable amount of variability at the stratum level
+  - 52% response rate!
+  
+  
+## weaknesses
+- not easily accessible (without a considerable amount of data cleaning, the results are difficult to interpret due to the format of the results)
+
+# Model
+1. logistic model
+2. Post-stratification 
+```{r}
+# 
+model <- stan_glm(own_rent~income_family + marital_status + province + hh_size, family=binomial(link = "logit"), data=cleaned_data)
+summary(model)
+
+
+```
+# Results
+# Discussion
 
 ## References
+
+
+
+
 H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
 
 Hadley Wickham, Jim Hester and Romain Francois (2018). readr: Read Rectangular Text Data. R package version 1.3.1.
@@ -48,3 +134,11 @@ Yihui Xie and J.J. Allaire and Garrett Grolemund (2018). R Markdown: The Definit
 Yihui Xie (2019) TinyTeX: A lightweight, cross-platform, and easy-to-maintain LaTeX distribution based on TeX
   Live. TUGboat 40 (1): 30--32. http://tug.org/TUGboat/Contents/contents40-1.htm
 
+
+https://laws-lois.justice.gc.ca/eng/acts/S-19/FullText.html
+
+https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&SDDS=4501
+
+https://www.tandfonline.com/doi/full/10.1080/17549175.2020.1726797?scroll=top&needAccess=true
+
+https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&SDDS=4501
