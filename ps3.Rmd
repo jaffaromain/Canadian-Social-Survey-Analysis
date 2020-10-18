@@ -24,28 +24,28 @@ gss <- read_csv("gss.csv")
 
 # Abstract
 
-*********add more**************
 The purpose of this analysis is to provide more insight on some predictors of home-ownership. 
 Through examining some key demographic variables such as family income, household size, marital status, and province, we were able to estimate the probability of a family choosing to rent over purchasing a home based on these predictors.
 
 # Introduction
-
  
-We live in times where nearly every aspect of our lives have changed as a result of the on-going pandemic. If we were to compare the way we did things a year ago from today, we'd describe it as being markedly different. One of the biggest impacts the pandemic has had, is on the corporate world. Prior to our current times, remote work was certainly an option, however it was far from being the norm. This had multiple implications on housing. Individuals may have typically wanted to look for accommodation closer to their workplace and may have elected to rent as opposed to purchasing due to the nature of their job. A lot of these circumstances have changed, people aren't as tied to the physical location of their jobs anymore. This provides people with the opportunity to escape from expensive metropolises into the arguably more affordable smaller cities. This analysis is a snapshot of human history before a marked change. It will establish a reference point for us to analyze the factors that affect canadian families and their decision to own or rent a home in a pre-covid world. To achieve this purpose, we're going to be looking at the GSS. The General Social Survey  was used to look the socio-demographic trends of families in Canada. The General Social Survey (2017) is a voluntary cross-sectional survey conducted by Statistics Canada that collected data on socioeconomic characteristics such as family origins and parental history. The survey is used to provide policy makers and analysts with statistical information that can be used for planning health and social service programs. The data set contains several variables, however we chose to look at family income, the family size, whether the respondent's family rents or owns, the marital status of the respondent, and the province in which the respondent resides. The purpose of this analysis is to extract possible factors that might affect a family choosing whether to rent or buy a home in Canada. To achieve this purpose, we will be fitting a logistic regression model on the data.
+We live in times where nearly every aspect of our lives have changed as a result of the on-going pandemic. If we were to compare the way we did things a year ago from today, we'd describe it as being markedly different. One of the biggest impacts the pandemic has had, is on the corporate world. Prior to our current times, remote work was certainly an option, however it was far from being the norm. This had multiple implications on housing. Individuals may have typically wanted to look for accommodation closer to their workplace and may have elected to rent as opposed to purchasing due to the nature of their job. A lot of these circumstances have changed; people aren't as tied to the physical location of their jobs anymore. This provides people with the opportunity to escape from expensive metropolises into the arguably more affordable smaller cities. This analysis is a snapshot of human history before a marked change. It will establish a reference point for us to analyze the factors that affect Canadian families and their decision to own or rent a home in a pre-covid world. To achieve this purpose, we're going to be looking at the General Social Survey  of Canada.The General Social Survey (2017) is a voluntary cross-sectional survey conducted by Statistics Canada that collected data on socioeconomic characteristics such as family origins and parental history. The General Social Survey  was used to look the socio-demographic trends of families in Canada.  The survey is also used to provide policy makers and analysts with statistical information that can be used for planning health and social service programs. The data set contains several variables, however we chose to look at family income, the family size, whether the respondent's family rents or owns, the marital status of the respondent, and the province in which the respondent resides. The purpose of this analysis is to extract possible factors that might affect a family choosing whether to rent or buy a home in Canada. To achieve this purpose, we will be fitting a logistic regression model on the data.
 
-The outcome we are trying to predict, is a binary value. As a result, a logistic regression model could be utilized:
+The outcome we are trying to predict, is a binary value. As a result, a logistic regression model can be utilized:
+
+
 y = owning or renting a home
 y = 1; The respondent's family rents a home
 y = 0; The respondent's family has purchased their home
 
 $$Pr(y_i = 1) = \mbox{logit}^{-1}\left(\alpha^{age}_{a[i]} + \alpha^{marital}_{m[i]} + \alpha^{size}_{s[i]} + \alpha^{income}_{n[i]}\right) $$
+
 where the $\alpha$ are province, family income, size of household,  and marital status, respectively. These are modeled as:
 $$\alpha^{variable}_i \sim N(0, \sigma_{variable})\mbox{ for }i = 1, 2, \ldots, I$$,
 
-Using multilevel  logistic regression with post-stratification, we are able to ____________________.
 # Data
 
-To procure this data, we have used the script provided Professor Rohan Alexander. This script loads in the raw GSS data, cleans it up and leaves the final result for us to do our analysis. We're using the most recently done survey, this was held in 2017. 
+To procure this data, we have used the script provided Professor Rohan Alexander. This script loads in the raw GSS data, cleans it up, and leaves the final result for us to do our analysis. We're using the most recently done survey. This was held in 2017. 
 
 This dataset is rich with several interesting variables that could be used for a variety of analyses. For our purposes, we've decided to select a few variables. Our variables of interest are:
 
@@ -55,29 +55,40 @@ This dataset is rich with several interesting variables that could be used for a
 
 - *age*: Fill in stuff here about the age of the respondents and why we might think it'll affect the model 
 
-- *Size of the household*: As families may grow in size, we might observe an increased number of families that'll buy houses.
+- *Size of the household*: As families may grow in size, we might observe an increased number of families that will buy houses.
 
 
-## Questionnaire:
+# Questionnaire:
 
-The theme of this survey is Family. As such, questionnaire is designed with intent. All the questions relate to family and address several topics. There are a total of 89 sections within the questionnaire. The sections contain at minimum one question. The sections the survey presents are quite broad but capture a great deal of depth in the detail about a household/individual. Statistics Canada reports that the survey was re-worked upon consulting respondents and implementing their feedback. Overall, the questionnaire is well written. A few of the criticisms include the length of the survey and minor intrusiveness of the questions. The survey is quite long, at minimum there are 89 questions, one for each section. Some sections have quite a bit more than that. To be fair, not all 89 sections will apply to every respondent, some of the sections would only be applicable if you qualify for it . For instance, there are 6 sections on relationship status, ranging from 1st/2nd/3rd marriage or 1st/2nd/3rd common-law union. If a respondent has only ever been married once or in one common-law union, they wouldn't have to respond to the other sections as it doesn't apply to them. With that perceived length, the survey has a 52% response rate. Some of the questions may be perceived as intrusive, questions regarding the respondent's interactions with their parents or reasons for not marrying their partners might come across as excessive. Ultimately, this boils down to the respondent's comfort level; the results are anonymized and they have the option to refuse. The questionnaire provides results that can be used for a plethora of analyses that might be useful for Canada's Minister of Families, Children and Social Development.
+The theme of this survey is family. As such, the questionnaire is designed with intent. All the questions  are related to family and address several topics. There are a total of 89 sections within the questionnaire. The sections contain at minimum one question. The sections the survey presents are quite broad but capture a great deal of depth in the detail about a household/individual,with key features such as, education, ethnic diversity, and housing. Statistics Canada reports that the survey was re-worked upon consulting respondents and implementing their feedback. Overall, the questionnaire is well written. A few of the criticisms include the length of the survey and minor intrusiveness of the questions. The survey is quite long, at minimum there are 89 questions, one for each section. Some sections have quite a bit more than that. Not all 89 sections will apply to every respondent, some of the sections would only be applicable if you qualify for it . For instance, there are 6 sections on relationship status, ranging from 1st/2nd/3rd marriage or 1st/2nd/3rd common-law union. If a respondent has only ever been married once or in one common-law union, they wouldn't have to respond to the other sections as it doesn't apply to them. The questionnaire provides results that can be used for a plethora of analyses that might be useful for Canada's Minister of Families, Children and Social Development.
+
+## Methodology
+
+ The survey had a target population of non-institutionalized people, 15 years of age and older, living in Canada. As a sampling frame,  a combination of land line and cellular telephone numbers from the Census, as well as other Statistics Canada administrative sources were used with a cross-sectional design, in which the data was collected from multiple individuals at once. The sample used a stratified probability sampling approach, dividing the 10 provinces into strata. Many of the geographic areas categorized as census metropolitan areas CMA) were considered separate strata(such as Toronto, Montreal, and Victoria). The non-CMA  areas were grouped to form 10 strata. This resulted in 27 strata in total. 
+
+## Strengths
+
+The surveys were collected from one randomly selected household member from each household, with 43 000 samples sent out. It was expected for 20 000 questionnaires to be completed. The survey had a high response rate, with 52.4% completion. Even with this response rate, to reduce non-response bias, survey weights were adjusted to account for non-response as much as possible using 2016 Census data. The data was enhanced by combining responses with information from personal and household tax data, gives more information to work with and draw more conclusions from. A minimum sample size was also used to ensure an acceptable amount of variability at the stratum level. 
+
+The survey is kept confidential under the Statistics Act of Canada. Under this act, surveyors are required to keep the respondent notified of what information is being collected, and allows the respondent to object to the sharing of the information obtained by the survey as long as they give notice.
+
+## Weaknesses
+
+One limitation when working with the data set is the ability to interpret the results. Without a considerable amount of data cleaning, the data is difficult to interpret in its raw form. The variance in cleaning methods could possibly lead to different finished data. This will also affect the reproducibility of this analysis. To combat this as best as possible, the cleaned GSS data could be made accessible via Github or any other hosting service.
+
+Some of the questions may be perceived as intrusive, questions regarding the respondent's interactions with their parents or reasons for not marrying their partners might come across as excessive. Ultimately, this boils down to the respondent's comfort level. The results are anonymized and they have the option to refuse. Questions relating to income had high non-response rates, and the reported income values were usually rough estimates.
 
 
-## EDA of our Data
-
+## Exploratory Data Analysis of our Data
 
 Things to do here, do a collinearity matrix between our predictors.
 
-
-
-## Key features
-- education
-- ethnic diversity
-- housing
-
-- age range: 15 - 80
-
 Through tidying the data and making the variable own_rent a binary outcome variable, this was the resulting data frame:
+
+age: the age of the respondent
+marital status: marital status of the respondent
+income_family: family income
+own_rent: whether the family owns or rents, with 1 representing a family renting, and 0 representing a family owning
 ```{r, echo = FALSE}
 ## retrieving variables needed
 data_raw <- gss %>% select(age, marital_status, income_family, own_rent, hh_size, province)
@@ -94,39 +105,20 @@ cleaned_data %>% as_tibble() %>% head()
 ```
 
 
-## Methodology
+```{r}
+cleaned_data %>% ggplot(aes(x = income_family)) + geom_bar(aes(fill = income_family)) + labs(title = "Figure 1: Distribution of Household Income", x = "Income group", y = "Count") + theme_gray()
+cleaned_data %>% ggplot(aes(x = age))
+cleaned_data %>% ggplot(aes(x = age))
+cleaned_data %>% ggplot(aes(x = age))
 
-- Surveyed approximately 43,000 non-institutionalized people, 15 years of age and older, living in Canada (population)
-- Used land line and cellular telephone numbers from the Census other Statistics Canada administrative sources (sampling frame)
-- cross-sectional design (collected at on specific point in time)
 
-- using stratified design with probability sampling
-- 10 provinces were divided into stratum. resulted in 27 strata in total. 
-
-- sample collected from one randomly selected household member
-- cost? ****
-
-- non response:
-  - to reduce nonresponse bias, survey weights were adjusted to account for nonresponse 
-  - household characteristics such as  household composition were taken from 2016 census data and used to adjust non-response
-
-## Strengths
-  -  survey kept confidential under Statistics Act of Statistics Canada and  under this act is required to keep the respondent notified of what information is being collected and allows the respondent to object to the sharing of the information obtained by the survey as long as they give notice
-  - data was enhanced by combining responses with information from personal and household tax data, gives more information to work with and draw more conclusions from
-  - minimum sample size used to ensure an acceptable amount of variability at the stratum level
-  - 52% response rate!
-  
-  
-## Weaknesses and next steps:
-
-- not easily accessible - without a considerable amount of data cleaning, the data is difficult to interpret in its raw form. The variance in cleaning methods could possibly lead to different finished data. This will also affect the reproducibility of this analysis. To combat this as best as possible, the cleaned gss data could be made accessible via Github or any other hosting service
+```
 
 
 
 # Model
-1. Logistic model 
-
-Why was this model chosen? 
+## Logistic Model 
+##Why was this model chosen? 
 
 A logistic regression model is typically chosen to model the relationship between a binary response variable and categorical/continous predictor variables. We chose this model for several reasons:
 
@@ -135,9 +127,6 @@ A logistic regression model is typically chosen to model the relationship betwee
 
 - It allows us to model the relative importance of each predictor. We might find through this approach that the size of the household is not as important as household income is. This lets us focus on the most important variables for our analysis
 
-- 
-
-2. Post-stratification 
 ```{r}
 # 
 model <- stan_glm(own_rent~income_family + marital_status + province + hh_size, family=binomial(link = "logit"), data=cleaned_data)
@@ -147,12 +136,11 @@ summary(model)
 car::vif(model)
 ##since the VIF is less than 5, we can assume non multi collinearity 
 
-
 ```
 # Results
 # Discussion
 
-- As mentioned in the introduction, this data represents an interesting snapshot of time. As this survey was conducted in 2017, this represents our pre-covid world. When this survey is conducted again in 2022, it'll be interesting to remodel these relationships and see how they have changed due to a significant event. We suspect that since remote work has become significantly more acceptable, with multiple large companies letting employees work from home permanently even once things return to normal, families are more likely to own a house. This conclusion is based on several factors. Since there is no requirement to remain close to corporate hubs such as Toronto, families can now move out of the city to cheaper cities. This reduces the cost barrier. This effect could trickle down in many ways, for instance, we might see that lots of families that made below $125,000 may now choose to purchase houses. There is also a chance that this might not be nearly as pronounced, the acceptance of remote work at a permanent level may still only be acceptable to those working in industries that
+As mentioned in the introduction, this data represents an interesting snapshot of time. As this survey was conducted in 2017, this represents our pre-covid world. When this survey is conducted again in 2022, it'll be interesting to remodel these relationships and see how they have changed due to a significant event. We suspect that since remote work has become significantly more acceptable, with multiple large companies letting employees work from home permanently even once things return to normal, families are more likely to own a house. This conclusion is based on several factors. Since there is no requirement to remain close to corporate hubs such as Toronto, families can now move out of the city to cheaper cities. This reduces the cost barrier. This effect could trickle down in many ways, for instance, we might see that lots of families that made below $125,000 may now choose to purchase houses. There is also a chance that this might not be nearly as pronounced, the acceptance of remote work at a permanent level may still only be acceptable to those working in industries that
 
 
 
