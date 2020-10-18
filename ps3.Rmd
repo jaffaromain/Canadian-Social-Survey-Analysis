@@ -1,6 +1,6 @@
 ---
 title: "Estimating the probability of Canadian home-ownership using demographic data"
-author: 'Jaffa Romain, Anees Shaikh)'
+author: 'Jaffa Romain, Anees Shaikh'
 date: "10/10/2020"
 output: pdf_document
 ---
@@ -106,12 +106,19 @@ cleaned_data %>% as_tibble() %>% head()
 
 
 ```{r}
-cleaned_data %>% ggplot(aes(x = income_family)) + geom_bar(aes(fill = income_family)) + labs(title = "Figure 1: Distribution of Household Income", x = "Income group", y = "Count") + theme_gray()
-cleaned_data %>% ggplot(aes(x = age))
-cleaned_data %>% ggplot(aes(x = age))
-cleaned_data %>% ggplot(aes(x = age))
 
-
+# plotting distribution of family incomes
+bar1 <- cleaned_data %>% ggplot(aes(x = income_family)) + geom_bar(aes(fill = income_family)) + labs(title = "Figure 1: Household Income Range of Respondents", x = "Income group", y = "Count") + theme_gray() + theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 5))
+# plotting distribution of household size
+bar2 <- cleaned_data %>% ggplot(aes(x = hh_size)) + geom_bar(fill = "blue") + labs(title = "Figure 2: Distribution of Household Size", x = "Number of people in household", y = "Count") + theme_light()
+# plotting distribution of age
+bar3 <- cleaned_data %>% ggplot(aes(x = age)) + geom_histogram(aes(y = ..density..), colour = "grey", fill = "blue") +geom_density() + labs(title = "Figure 3: Age Distribution of Respondents", x = "Age", y = "Count") + theme_gray()
+# plotting distribution of marital status
+bar_4 <- cleaned_data %>% ggplot(aes(x = marital_status)) + geom_bar(aes(fill = marital_status)) + labs(title = "Figure 4: Marital Status of Respondents", x = "Marital Status", y = "Count") + theme_gray() + theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 5))
+bar1
+bar2
+bar3
+bar_4
 ```
 
 
@@ -120,12 +127,12 @@ cleaned_data %>% ggplot(aes(x = age))
 ## Logistic Model 
 ##Why was this model chosen? 
 
-A logistic regression model is typically chosen to model the relationship between a binary response variable and categorical/continous predictor variables. We chose this model for several reasons:
+A logistic regression model is typically chosen to model the relationship between a binary response variable and categorical/continuous predictor variables. We chose this model for several reasons:
 
 
 - This model was primarily chosen due to our choice of a binary response variable. Our response variable was **own_rent**. This is a categorical variable where 1 represents being an renter, and 0 being an owner. 
 
-- It allows us to model the relative importance of each predictor. We might find through this approach that the size of the household is not as important as household income is. This lets us focus on the most important variables for our analysis
+- It allows us to model the relative importance of each predictor. We might find through this approach that the size of the household is not as important as household income is. This lets us focus on the most important variables for our analysis.
 
 ```{r}
 # 
@@ -136,8 +143,11 @@ summary(model)
 car::vif(model)
 ##since the VIF is less than 5, we can assume non multi collinearity 
 
+
+
 ```
 # Results
+
 # Discussion
 
 As mentioned in the introduction, this data represents an interesting snapshot of time. As this survey was conducted in 2017, this represents our pre-covid world. When this survey is conducted again in 2022, it'll be interesting to remodel these relationships and see how they have changed due to a significant event. We suspect that since remote work has become significantly more acceptable, with multiple large companies letting employees work from home permanently even once things return to normal, families are more likely to own a house. This conclusion is based on several factors. Since there is no requirement to remain close to corporate hubs such as Toronto, families can now move out of the city to cheaper cities. This reduces the cost barrier. This effect could trickle down in many ways, for instance, we might see that lots of families that made below $125,000 may now choose to purchase houses. There is also a chance that this might not be nearly as pronounced, the acceptance of remote work at a permanent level may still only be acceptable to those working in industries that
@@ -184,3 +194,4 @@ https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&SDDS=4501
 https://www.tandfonline.com/doi/full/10.1080/17549175.2020.1726797?scroll=top&needAccess=true
 
 https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&SDDS=4501
+
