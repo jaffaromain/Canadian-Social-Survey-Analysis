@@ -1,5 +1,5 @@
 ---
-title: "Estimating the probability of Canadian home-ownership using demographic data"
+title: "Estimating The Probability of Canadian Home-ownership Status Using Demographic Data"
 author: 'Jaffa Romain, Anees Shaikh'
 date: "10/10/2020"
 repo: "https://github.com/jaffaromain/Canadian-Social-Survey-Analysis"
@@ -13,7 +13,9 @@ output: pdf_document
 # install.packages("tinytex")
 # install.packages("readr")
 # install.packages("ggplot2")
-# install.packages("sjplot")
+# install.packages("sjPlot")
+# install.packages("knitr")
+# install.packages("jtools")
 
 library(tidyverse)
 library(readr)
@@ -21,36 +23,35 @@ library(tinytex)
 library(ggplot2)
 library(sjPlot)
 library(jtools)
+library(knitr)
 
 gss <- read_csv("gss.csv")
 ```
 
 # Abstract
 
-The purpose of this analysis is to provide more insight on some predictors of homeownership.Through examining some key demographic variables in the 2017 General Social Survey such as family income, household size, marital status, and province, we were able to estimate the probability of a family choosing to rent over purchasing a home based on these predictors.
+The purpose of this analysis is to provide more insight on some predictors of home ownership. Through examining some key demographic variables in the 2017 General Social Survey such as family income, household size, marital status, and province, we were able to estimate the probability of a family choosing to rent over purchasing a home based on these predictors. Through our analysis, we found that factors such as lower family income and a respondent being separated or single increases the likelihood of a family renting a home.
 
 # Introduction
  
 We live in times where nearly every aspect of our lives have changed as a result of the on-going pandemic. If we were to compare the way we did things a year ago from today, we'd describe it as being markedly different. One of the biggest impacts the pandemic has had, is on the corporate world. Prior to our current times, remote work was certainly an option, however it was far from being the norm. This had multiple implications on housing. Individuals may have typically wanted to look for accommodation closer to their workplace and may have elected to rent as opposed to purchasing due to the nature of their job. A lot of these circumstances have changed; people aren't as tied to the physical location of their jobs anymore. This provides people with the opportunity to escape from expensive metropolises into the arguably more affordable smaller cities. This analysis is a snapshot of human history before a marked change. It will establish a reference point for us to analyze the factors that affect Canadian families and their decision to own or rent a home in a pre-covid world. 
 
-To achieve this purpose, we are going to be looking at the General Social Survey  of Canada.The General Social Survey (2017) is a voluntary cross-sectional survey conducted by Statistics Canada that collected data on socioeconomic characteristics such as family origins and parental history. The General Social Survey  was used to look at the socio-demographic trends of families in Canada.  The survey is also used to provide policy makers and analysts with statistical information that can be used for planning health and social service programs. The data set contains several variables, however we chose to look at family income, the family size, whether the respondent's family rents or owns, the marital status of the respondent, and the province in which the respondent resides. The purpose of this analysis is to extract possible factors that might affect a family choosing whether to rent or buy a home in Canada. To achieve this purpose, we will be fitting a logistic regression model on the data.The outcome we are trying to predict, is a binary value. As a result, a logistic regression model can be utilized.
+To achieve this purpose, we are going to be looking at the General Social Survey  of Canada. The General Social Survey (2017) is a voluntary cross-sectional survey conducted by Statistics Canada that collected data on socioeconomic characteristics such as family origins and parental history. The General Social Survey  was used to look at the socio-demographic trends of families in Canada.  The survey is also used to provide policy makers and analysts with statistical information that can be used for planning health and social service programs. The data set contains several variables. However, we chose to look at family income, the family size, whether the respondent's family rents or owns, the marital status of the respondent, and the province in which the respondent resides. The purpose of this analysis is to extract possible factors that might affect a family choosing whether to rent or buy a home in Canada. To achieve this purpose, we will be fitting a logistic regression model on the data. The outcome we are trying to predict, is a binary value. As a result, a logistic regression model can be utilized.
 
-The report kicks off with a section on the data. In this section, we detail the questionnaire that was used in the survey. We list out the methodology and the strengths and weaknesses of the survey. Additionally, the choice of variables is explained and some basic EDA is presented. After the data has been introduced, there is a discussion around the model and why it was chosen. The results section will contain results from the modelling exercise and other charts from the survey data to supplement the model findings. The discussion section will feature a deep dive on the results and identify the outputs of the model. We find that factors such being married have a positive association with owning, and being in an income bracket under $50,000 has a positive association with renting.
+The report starts with exploring the data. In this section, we detail the questionnaire that was used in the survey. We list out the methodology and the strengths and weaknesses of the survey. Additionally, the choice of variables is explained and some basic exploratory data analysis is presented. After the data has been introduced, there is a discussion around the model and why it was chosen. The results section will contain results from the modelling exercise and other charts from the survey data to supplement the model findings. The discussion section will feature a deep dive on the results and identify the outputs of the model. We find that factors such being married have a positive association with owning, and being in an income bracket under $50,000 has a positive association with renting.
 
 # Data
-
-
 ```{r, echo = FALSE, message=FALSE}
 ## retrieving variables needed and filtering out possible NA values
 cleaned_data <- gss %>% 
-  select(age, marital_status, income_family, own_rent, hh_size, province) %>% 
+  select(marital_status, income_family, own_rent, hh_size, province) %>% 
   filter(marital_status != "NA", province  != "NA", own_rent  != "NA", hh_size != "NA", own_rent != "Don't know") %>% 
   mutate(own_rent = ifelse(own_rent == "Rented, even if no cash rent is paid", 1, 0)) #creating our binary variable
 
 cleaned_data %>% as_tibble() %>% head()
 ```
 
-To create our model, we have utilized the General Social Survey produced by Statistics Canada. This data is available for a fee using Statistics Canada's Real Time Remote Access tool. To procure this data, we have used the script provided by Professor Rohan Alexander. This script loads in the raw GSS data, cleans it up, and leaves the final result for us to do our analysis. We are using the most recently done survey. This was held in 2017. This dataset is rich with several interesting variables that could be used for a variety of analyses. For our purposes, we've decided to select a few variables. Our variables of interest are:
+To create our model, we have utilized the General Social Survey produced by Statistics Canada. This data is available for a fee using Statistics Canada's Real Time Remote Access tool. To procure this data, we have used the script provided by Professor Rohan Alexander. This script loads in the raw GSS data, cleans it up, and leaves with a tidied data set for us to do our analysis. We are using the most recently done survey. This was held in 2017. This data set is rich with several interesting variables that could be used for a variety of analyses. For our purposes, we've decided to select the following variables of interest are:
 
 - *Household Income*: This is arguably one of the most important factors for choosing to rent or own. Having a stable income and the means to purchase would be typically necessary. Barring special circumstances such as an inheritance, a buyer will need to show some sort of stable income to qualify for a mortgage as well as put down money for the down-payment. In Canada, a minimum of 5% is required for properties that are below $500,000. 
 
@@ -143,7 +144,7 @@ A logistic regression model is typically chosen to model the relationship betwee
 
 $$log( \frac{{p}}{1-{p}}) = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_3 + \beta_4 x_4 + .... +  \beta_n x_n$$ 
 
-where the $\beta_n$ are the factored province, household income, size of household, and marital status respectively.
+where the $\beta_n$ are the province, household income, factored size of household, and marital status respectively.
 
 
 Through fitting a model using the chosen predictor variables, we are left with the given fitted logistic model with the following coefficients that are statistically significant at a 5% level:
@@ -208,15 +209,24 @@ household_size
 ```{r, echo=FALSE}
 province_dist
 ```
- 
+
+As we can see in figure 1, there are 6 different income groups in the data set. As mentioned previously, the, questions pertaining to income in the data set high non-response rates. However when observing data from 2016 census data, we can see that the sample follows the same trends, such as the family income brackets with the largest proportion of respondents being \$125 000 and more, with \$25 000 - $49 000 coming in second. This suggests that the proportions we have for each income bracket is a good representation of family household in Canada. 
+
+In figure 2, we can see that most respondents of the survey are married, and the least number of respondents are separated. In figure 3, we see that the highest number of respondents belong to a two-person household. 
+
+In figure 4, we can see that an overwhelming amount of respondents reside in Ontario, with Quebec coming in second. According to a 2016 census, Ontario and Quebec had the largest population counts, with other provinces also following a pattern similar to the census data. The distribution of population count from the census data can be found in the appendix.
 
 ```{r,echo=FALSE, message=FALSE}
 plot_model(model, vline.color = "red", sort.est = TRUE, title = "Figure 5: Odds Ratios of the Logistic Regression model")
 ```
+
+Figure 5 provides a visual of the odds ratios of the logistic model fitted to our data. The odd ratios can be used to compare the relative odds of a respondent choosing to rent a home, depending on the variable of interest. An odd ratio greater than 1 indicates increased occurrence of an event, while an odd ratio less than 1 indicated decreased occurrence of an event.
+
+By plotting these odd ratios we can see that families with incomes less than \$25 000 have the highest odd ratio. This means that a family being in this income bracket increases their odds of renting over buying a home. We can see that those odds decrease as income increases, with those earning over $125 000 having the lowest odd ratio out of all the income brackets. Having an income in this category actually decreases the odds of a family renting. When analyzing marital status, those who are single have the highest odds of renting. Those living common-law with a partner come to a second. Widowed respondents have the lowest odds of renting, followed by married respondents, where both have decreased odds of renting. A household size of 3 has the highest odds of a family renting a home, but family size overall seems to decrease the odds of a family choosing to rent. When looking at the provinces in which the respondents reside, Quebec has the highest odd ratio, followed by Ontario. Living in regions such as New Brunswick and Newfoundland decrease the odds of a family renting a home. An interest observation is that Prince Edward Island has an exact odd ratio of 1. This suggests that a respondent living in Prince Edward Island does not affect the odds of the person choosing to rent. 
+
 ## Survey Results
 
 These results are different trends and charts that will be used to supplement the conclusions drawn from the model in the discussion section.
-
 
 ```{r, echo=FALSE, message=FALSE}
 cleaned_data %>% 
@@ -230,7 +240,7 @@ cleaned_data %>%
        y = "Count",
        caption = "Source: GSS 2017 Data")
 ```
-Figure 7 shows the distribution of household sizes when grouped by household income. We observe that respondents below a $50,000 income bracket are overwhelmingly one and 2 people households.
+Figure 6 shows the distribution of household sizes when grouped by household income. We observe that respondents below a $50,000 income bracket are overwhelmingly one and 2 people households.
 
 
 ```{r, echo=FALSE, message=FALSE}
@@ -246,7 +256,7 @@ cleaned_data %>%
        y = "Count",
        caption = "Source: GSS 2017 Data")
 ```
-
+Figure 7 shows the distribution of ownership status household income. We can see that in income brackets larger than\$75 000 majority of respondents own their homes. The distribution of those who choose to rent is higher for those who are in the income bracket of less than $25 000.
 ```{r, echo=FALSE, message=FALSE}
 cleaned_data %>% 
   group_by(income_family, marital_status) %>% 
@@ -259,7 +269,7 @@ cleaned_data %>%
        y = "Count",
        caption = "Source: GSS 2017 Data")
 ```
-
+In figure 8, we can see that married is the highest count for marital status in all income brackets except for respondents who have a family income of less than $25 000. For these respondents, the most common marital status is single.
 
 ```{r, echo=FALSE, message=FALSE}
 cleaned_data %>% 
@@ -274,7 +284,7 @@ cleaned_data %>%
        y = "Count",
        caption = "Source: GSS 2017 Data")
 ```
-
+In figure 9, we can see that the number of those who choose to rent is higher for all provinces. However, we see a larger different in ownership status in the provinces Ontario, Quebec, and British Columbia. These provinces have a much larger proportion of those who rent.
 
 
 # Discussion
@@ -289,55 +299,74 @@ cleaned_data %>%
 
 ## Weaknesses and next steps:
 
-Some literature has established an interactive effect between certain variables(Li, 1977). Our model does not incorporate such interactions and is thus missing out on some significant interactions. While the variables we picked are well established in the literature, we missed out on an opportunity to include some other well established variables that would've let some more unique findings(Xhignesse et al, 2014). For instance, research has shown that ethnicity plays a role in homeownership(Li, 1977). In Toronto, certain ethnic minorities such as African and Caribbean minorities exhibit much lower rates of ownership, even when minimizing financial differences(Xhignesse et al, 2014). The GSS has ethnicity and whether they are part of a visible minority as variables. Replicating that study in 2020 provides us with an opportunity to assess whether social development policies have been effective. It also allows us to assess
+Some literature has established an interactive effect between certain variables(Li, 1977). Our model does not incorporate such interactions and is thus missing out on some significant interactions. While the variables we picked are well established in the literature, we missed out on an opportunity to include some other well established variables that would've let some more unique findings(Xhignesse et al, 2014). For instance, research has shown that ethnicity plays a role in home ownership(Li, 1977). In Toronto, certain ethnic minorities such as African and Caribbean minorities exhibit much lower rates of ownership, even when minimizing financial differences(Xhignesse et al, 2014). The GSS has included ethnicity and whether a respondent is part of a visible minority as variables. Replicating that study in 2020 provides us with an opportunity to assess whether social development policies have been effective. 
+
+A variable that can be considered for further study is looking at the population center of the respondent. This would allow us to investigate the choices of those living in urban population centers compared to small rural/non-ruban areas. This is highly relevant in areas in Ontario, where housing is very expensive in urban bubbles such as Toronto, compared to areas in Ontario such as Kawartha Lakes. 
+
+## Appendix
+figure 10
+```{r}
+knitr::include_graphics("pop.jpg")
+
+```
+
+All code for this report and corresponding rmd file can be found at: "https://github.com/jaffaromain/Canadian-Social-Survey-Analysis"
 
 ## References
+ 
+Government of Canada. Statistics Act (2020).                https://laws-lois.justice.gc.ca/eng/acts/S-19/FullText.h   tml
 
+Hadley Wickham (2016). ggplot2: Elegant Graphics for Data   Analysis. Springer-Verlag New York
 
+Hadley Wickham, Jim Hester and Romain Francois (2018).     readr: Read Rectangular Text Data. R package version      1.3.1.
+ https://CRAN.R-project.org/package=readr
 
-Hadley Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
+JJ Allaire and Yihui Xie and Jonathan McPherson and Javier  Luraschi and Kevin Ushey and Aron Atkins and Hadley
+ Wickham and Joe Cheng and Winston Chang and Richard       Iannone (2020). rmarkdown: Dynamic Documents for R. R     package version 2.3. URL https://rmarkdown.rstudio.com.
 
-Hadley Wickham, Jim Hester and Romain Francois (2018). readr: Read Rectangular Text Data. R package version 1.3.1.
-https://CRAN.R-project.org/package=readr
+Li, M. (1977). A Logit Model of Homeownership.              Econometrica, 45(5), 1081-1097. doi:10.2307/1914060
 
-JJ Allaire and Yihui Xie and Jonathan McPherson and Javier Luraschi and Kevin Ushey and Aron Atkins and Hadley
-Wickham and Joe Cheng and Winston Chang and Richard Iannone (2020). rmarkdown: Dynamic Documents for R. R package version 2.3. URL https://rmarkdown.rstudio.com.
-
-Li, M. (1977). A Logit Model of Homeownership. Econometrica, 45(5), 1081-1097. doi:10.2307/1914060
+Long JA (2020). _jtools: Analysis and Presentation of
+  Social Scientific Data_. R package version 2.1.0,
+  URL: https://cran.r-project.org/package=jtools.
   
-Lüdecke D (2020). _sjPlot: Data Visualization for Statistics in Social Science_. R package version 2.8.5, <URL:
-https://CRAN.R-project.org/package=sjPlot>.
+Lüdecke D (2020). _sjPlot: Data Visualization for           Statistics in Social Science_. R package version 2.8.5,   URL: https://CRAN.R-project.org/package=sjPlot.
 
-Rohan Alexander and Sam Caetano (2020). GSS cleaning. University of Toronto, rohan.alexander@utoronto.ca
+Ontario Ministry of Finance (2020). 2016 CENSUS             HIGHLIGHTS: Factsheet                                     1.https://www.fin.gov.on.ca/en/economy/demographics/cens   us/cenhi16-1.html
 
-R Core Team (2020). R: A language and environment for statistical computing. R Foundation for Statistical
-  Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+Rohan Alexander and Sam Caetano (2020). GSS 2017 cleaning   data. University of Toronto. file: cleaning_data.Rmd
+
+R Core Team (2020). R: A language and environment for 5     statistical computing. R Foundation for Statistical
+  Computing, Vienna, Austria. https://www.R-project.org/.
   
-Statistics Canada. Table 11-10-0066-01 Market Basket Measure (MBM) thresholds for the reference family by Market Basket Measure region, component and base year
+Statistics Canada. (2017). General social survey (GSS).     https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSur   vey&SDDS=4501
 
-Statistics Canada. (2017). General social survey (GSS)
+Statistics Canada (2020). Census Program.              https://www12.statcan.gc.ca/census-recensement/index-eng.cfm
+
+Statistics Canada (2020). Table 11-10-0066-01 Market        Basket Measure (MBM) thresholds for the reference family   by Market Basket Measure region, component and base       year.
+
+
+Sylvia J.T. Jansen (2020) Urban, suburban or rural?         Understanding preferences for the residential             environment, Journal of Urbanism: International Research   on Placemaking and Urban Sustainability, 13:2, 213-235,   DOI: 10.1080/17549175.2020.1726797
   
-
-Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686,
+Wickham et al., (2019). Welcome to the tidyverse. Journal   of Open Source Software, 4(43), 1686,
   https://doi.org/10.21105/joss.01686
   
-Xhignesse, Guillaume & Bianchet, Bruno & Cools, Mario & Gathon, Henry-Jean & Jurion, Bernard & Teller, Jacques. (2014). An Econometric Analysis of Homeownership Determinants in Belgium. 8581. 65-79. 10.1007/978-3-319-09150-1_6. 
+Xhignesse, Guillaume & Bianchet, Bruno & Cools, Mario &     Gathon, Henry-Jean & Jurion, Bernard & Teller, Jacques.   (2014). An Econometric Analysis of Homeownership
+  Determinants in Belgium. 8581. 65-79.   10.1007/978-3-319-09150-1_6. 
+
+Yihui Xie (2020). knitr: A General-Purpose Package for      Dynamic Report Generation in R. R package
+  version 1.30.
   
-Yihui Xie (2020). tinytex: Helper Functions to Install and Maintain TeX Live, and Compile LaTeX Documents. R
+Yihui Xie (2020). tinytex: Helper Functions to Install and   Maintain TeX Live, and Compile LaTeX Documents. R
   package version 0.26.
   
-Yihui Xie and J.J. Allaire and Garrett Grolemund (2018). R Markdown: The Definitive Guide. Chapman and Hall/CRC.
-  ISBN 9781138359338. URL https://bookdown.org/yihui/rmarkdown.
+Yihui Xie and J.J. Allaire and Garrett Grolemund (2018). R   Markdown: The Definitive Guide. Chapman and Hall/CRC.
+  ISBN 9781138359338. URL   https://bookdown.org/yihui/rmarkdown.
   
-Yihui Xie (2019) TinyTeX: A lightweight, cross-platform, and easy-to-maintain LaTeX distribution based on TeX
-  Live. TUGboat 40 (1): 30--32. http://tug.org/TUGboat/Contents/contents40-1.htm
 
 
-https://laws-lois.justice.gc.ca/eng/acts/S-19/FullText.html
 
-https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&SDDS=4501
-
-https://www.tandfonline.com/doi/full/10.1080/17549175.2020.1726797?scroll=top&needAccess=true
-
+http://tug.org/TUGboat/Contents/contents40-1.html
 
 
