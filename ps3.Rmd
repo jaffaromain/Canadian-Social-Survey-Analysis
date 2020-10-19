@@ -12,12 +12,14 @@ output: pdf_document
 # install.packages("tinytex")
 # install.packages("readr")
 # install.packages("ggplot2")
-library(broom)
-library(rstanarm)
+# install.packages("sjplot")
+
 library(tidyverse)
 library(readr)
 library(tinytex)
 library(ggplot2)
+library(sjPlot)
+library(jtools)
 
 gss <- read_csv("gss.csv")
 ```
@@ -29,36 +31,97 @@ Through examining some key demographic variables such as family income, househol
 
 # Introduction
  
-We live in times where nearly every aspect of our lives have changed as a result of the on-going pandemic. If we were to compare the way we did things a year ago from today, we'd describe it as being markedly different. One of the biggest impacts the pandemic has had, is on the corporate world. Prior to our current times, remote work was certainly an option, however it was far from being the norm. This had multiple implications on housing. Individuals may have typically wanted to look for accommodation closer to their workplace and may have elected to rent as opposed to purchasing due to the nature of their job. A lot of these circumstances have changed; people aren't as tied to the physical location of their jobs anymore. This provides people with the opportunity to escape from expensive metropolises into the arguably more affordable smaller cities. This analysis is a snapshot of human history before a marked change. It will establish a reference point for us to analyze the factors that affect Canadian families and their decision to own or rent a home in a pre-covid world. To achieve this purpose, we're going to be looking at the General Social Survey  of Canada.The General Social Survey (2017) is a voluntary cross-sectional survey conducted by Statistics Canada that collected data on socioeconomic characteristics such as family origins and parental history. The General Social Survey  was used to look the socio-demographic trends of families in Canada.  The survey is also used to provide policy makers and analysts with statistical information that can be used for planning health and social service programs. The data set contains several variables, however we chose to look at family income, the family size, whether the respondent's family rents or owns, the marital status of the respondent, and the province in which the respondent resides. The purpose of this analysis is to extract possible factors that might affect a family choosing whether to rent or buy a home in Canada. To achieve this purpose, we will be fitting a logistic regression model on the data.
+We live in times where nearly every aspect of our lives have changed as a result of the on-going pandemic. If we were to compare the way we did things a year ago from today, we'd describe it as being markedly different. One of the biggest impacts the pandemic has had, is on the corporate world. Prior to our current times, remote work was certainly an option, however it was far from being the norm. This had multiple implications on housing. Individuals may have typically wanted to look for accommodation closer to their workplace and may have elected to rent as opposed to purchasing due to the nature of their job. A lot of these circumstances have changed; people aren't as tied to the physical location of their jobs anymore. This provides people with the opportunity to escape from expensive metropolises into the arguably more affordable smaller cities. This analysis is a snapshot of human history before a marked change. It will establish a reference point for us to analyze the factors that affect Canadian families and their decision to own or rent a home in a pre-covid world. 
 
-The outcome we are trying to predict, is a binary value. As a result, a logistic regression model can be utilized:
+To achieve this purpose, we're going to be looking at the General Social Survey  of Canada.The General Social Survey (2017) is a voluntary cross-sectional survey conducted by Statistics Canada that collected data on socioeconomic characteristics such as family origins and parental history. The General Social Survey  was used to look at the socio-demographic trends of families in Canada.  The survey is also used to provide policy makers and analysts with statistical information that can be used for planning health and social service programs. The data set contains several variables, however we chose to look at family income, the family size, whether the respondent's family rents or owns, the marital status of the respondent, and the province in which the respondent resides. The purpose of this analysis is to extract possible factors that might affect a family choosing whether to rent or buy a home in Canada. To achieve this purpose, we will be fitting a logistic regression model on the data.The outcome we are trying to predict, is a binary value. As a result, a logistic regression model can be utilized.
 
-
-y = owning or renting a home
-y = 1; The respondent's family rents a home
-y = 0; The respondent's family has purchased their home
-p = probability of a family renting a home
-
-$$log( \frac{{p}}{1-{p}}) = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_3 + \beta_4 x_4 + .... +  \beta_n x_n$$
-
-
-where the $\beta_n$ are the factored province, family income, size of household, and marital status respectively.
 # Data
 
-To procure this data, we have used the script provided Professor Rohan Alexander. This script loads in the raw GSS data, cleans it up, and leaves the final result for us to do our analysis. We're using the most recently done survey. This was held in 2017. 
 
-This dataset is rich with several interesting variables that could be used for a variety of analyses. For our purposes, we've decided to select a few variables. Our variables of interest are:
+```{r, echo = FALSE, message=FALSE, include=FALSE}
+## retrieving variables needed and filtering out possible NA values
+cleaned_data <- gss %>% 
+  select(age, marital_status, income_family, own_rent, hh_size, province) %>% 
+  filter(marital_status != "NA", province  != "NA", own_rent  != "NA", hh_size != "NA", own_rent != "Don't know") %>% 
+  mutate(own_rent = ifelse(own_rent == "Rented, even if no cash rent is paid", 1, 0))
 
-- *Household Income*: stuff about why income is important, tie it to being able to afford a house to begin with.
+cleaned_data %>% as_tibble() %>% head()
+```
 
-- *Marital Status*: potential reasons about why people may want to buy houses as a result of being offered tax rebates on purchasing houses due to being married/common law
+To procure this data, we have used the script provided by Professor Rohan Alexander. This script loads in the raw GSS data, cleans it up, and leaves the final result for us to do our analysis. We're using the most recently done survey. This was held in 2017. This dataset is rich with several interesting variables that could be used for a variety of analyses. For our purposes, we've decided to select a few variables. Our variables of interest are:
 
-- *age*: Fill in stuff here about the age of the respondents and why we might think it'll affect the model 
+- *Household Income*: This is arguably one of the most important factors for choosing to rent or own. Having a stable income and the means to purchase would be typically necessary. Barring special circumstances such as an inheritance, a buyer will need to show some sort of stable income to qualify for a mortgage as well as put down money for the down-payment. In Canada, a minimum of 5% is required for properties that are below $500,000. 
 
-- *Size of the household*: As families may grow in size, we might observe an increased number of families that will buy houses.
+```{r, echo=FALSE, message=FALSE}
+# plotting distribution of family incomes
+income_dist <- cleaned_data %>% 
+  ggplot(aes(x = income_family)) + 
+  geom_bar(aes(fill = income_family)) + 
+  labs(title = "Figure 1: Household Income Range of Respondents", 
+       x = "Income group", 
+       y = "Count",
+       caption = "Source: GSS 2017") + 
+  theme_gray() + 
+  theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 5))
+
+# plotting distribution of household size
+household_size <- cleaned_data %>% 
+  ggplot(aes(x = hh_size)) + 
+  geom_bar(fill = "blue") + 
+  labs(title = "Figure 3: Distribution of Household Size", 
+       x = "Number of people in household", 
+       y = "Count",
+       caption = "Source: GSS 2017") + 
+  theme_light()
 
 
-# Questionnaire:
+
+# plotting distribution of marital status
+marital_status_dist <- cleaned_data %>% 
+  ggplot(aes(x = marital_status)) + 
+  geom_bar(aes(fill = marital_status)) + 
+  labs(title = "Figure 2: Marital Status of Respondents", 
+       x = "Marital Status", 
+       y = "Count",
+       caption = "Source: GSS 2017") +
+  theme_gray() + 
+  theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 5))
+
+income_dist
+```
+
+
+
+- *Marital Status*: Our second variable of interest is the marital status of our respondent. It includes: Single(never married), Separated, Divorced, Widowed, Married, and Common-Law. There are a few reasons why this variable was included. There is first the effect of potentially having 2 incomes that can be pooled to purchase a house. We expect to see a positive association between Marriage/Common-Law and owning a property. By and large, most respondents appear to be married.
+
+```{r, echo=FALSE, message=FALSE}
+marital_status_dist
+```
+
+
+
+- *Size of the household*: One of the reasons that this variable was included was to observe a potential effect between increasing households and purchasing a house. The household size is capped at 6 in the data. It isn't clear if this is by design or just a result of the sample.
+Potential reasons for household size influencing ownership might be that families may want to settle down and purchase a house in an area with a good school. The data shows that most households appear to house 1 to 2 people
+```{r, message=FALSE}
+household_size
+```
+
+
+- *Province*: We included provinces to see if there are any associations between residing in a province and home ownership. The average price of a condominium in Toronto is ~\$720,000 and the average price of a condominium in Calgary is ~\$240,000. This marked price difference is one the reasons why we believe the Province will likely influence the decision to own a property. 
+
+```{r, echo=FALSE, message=FALSE}
+cleaned_data %>% 
+  ggplot(aes(x = province)) + 
+  geom_bar(aes(fill = province)) + 
+  labs(title = "Figure 4: Which province do respondents reside in?", 
+       x = "Province", 
+       y = "Count",
+       caption = "Source: GSS 2017") + 
+  theme_gray() + 
+  theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 5))
+```
+
+## Questionnaire:
 
 The theme of this survey is family. As such, the questionnaire is designed with intent. All the questions  are related to family and address several topics. There are a total of 89 sections within the questionnaire. The sections contain at minimum one question. The sections the survey presents are quite broad but capture a great deal of depth in the detail about a household/individual,with key features such as, education, ethnic diversity, and housing. Statistics Canada reports that the survey was re-worked upon consulting respondents and implementing their feedback. Overall, the questionnaire is well written. A few of the criticisms include the length of the survey and minor intrusiveness of the questions. The survey is quite long, at minimum there are 89 questions, one for each section. Some sections have quite a bit more than that. Not all 89 sections will apply to every respondent, some of the sections would only be applicable if you qualify for it . For instance, there are 6 sections on relationship status, ranging from 1st/2nd/3rd marriage or 1st/2nd/3rd common-law union. If a respondent has only ever been married once or in one common-law union, they wouldn't have to respond to the other sections as it doesn't apply to them. The questionnaire provides results that can be used for a plethora of analyses that might be useful for Canada's Minister of Families, Children and Social Development.
 
@@ -68,7 +131,7 @@ The theme of this survey is family. As such, the questionnaire is designed with 
 
 ## Strengths
 
-The surveys were collected from one randomly selected household member from each household, with 43 000 samples sent out. It was expected for 20 000 questionnaires to be completed. The survey had a high response rate, with 52.4% completion. Even with this response rate, to reduce non-response bias, survey weights were adjusted to account for non-response as much as possible using 2016 Census data. The data was enhanced by combining responses with information from personal and household tax data, gives more information to work with and draw more conclusions from. A minimum sample size was also used to ensure an acceptable amount of variability at the stratum level. 
+The surveys were collected from one randomly selected household member from each household, with 43 000 samples sent out. It was expected for 20 000 questionnaires to be completed. The survey had a high response rate, with 52.4% completion. Even with this response rate, to reduce non-response bias, survey weights were adjusted to account for non-response as much as possible using 2016 Census data. The data was enhanced by combining responses with information from personal and household tax data, gives more information to work with and draw more conclusions from. A minimum sample size was also used to ensure an acceptable amount of variability at the stratum level.
 
 The survey is kept confidential under the Statistics Act of Canada. Under this act, surveyors are required to keep the respondent notified of what information is being collected, and allows the respondent to object to the sharing of the information obtained by the survey as long as they give notice.
 
@@ -78,116 +141,165 @@ One limitation when working with the data set is the ability to interpret the re
 
 Some of the questions may be perceived as intrusive, questions regarding the respondent's interactions with their parents or reasons for not marrying their partners might come across as excessive. Ultimately, this boils down to the respondent's comfort level. The results are anonymized and they have the option to refuse. Questions relating to income had high non-response rates, and the reported income values were usually rough estimates.
 
-
-## Exploratory Data Analysis of our Data
-
-Things to do here, do a collinearity matrix between our predictors.
-
-Through tidying the data and making the variable own_rent a binary outcome variable, this was the resulting data frame:
-
-age: the age of the respondent
-marital status: marital status of the respondent
-income_family: family income
-own_rent: whether the family owns or rents, with 1 representing a family renting, and 0 representing a family owning
-```{r, echo = FALSE}
-## retrieving variables needed
-data_raw <- gss %>% select(age, marital_status, income_family, own_rent, hh_size, province)
-
-## filter out any possible NA values
-
-cleaned_dat <- data_raw %>% filter(marital_status != "NA", province  != "NA", own_rent  != "NA", hh_size != "NA", own_rent != "Don't know")
-
-## set training and testing data using the variable we are trying to predict to check generalization error
-set.seed(123)  # for reproducibility
-cleaned_data <- cleaned_dat %>% mutate(own_rent = ifelse(own_rent == "Rented, even if no cash rent is paid", 1, 0))
-
-cleaned_data %>% as_tibble() %>% head()
-```
-
-
-```{r}
-
-# plotting distribution of family incomes
-bar1 <- cleaned_data %>% ggplot(aes(x = income_family)) + geom_bar(aes(fill = income_family)) + labs(title = "Figure 1: Household Income Range of Respondents", x = "Income group", y = "Count") + theme_gray() + theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 5))
-# plotting distribution of household size
-bar2 <- cleaned_data %>% ggplot(aes(x = hh_size)) + geom_bar(fill = "blue") + labs(title = "Figure 2: Distribution of Household Size", x = "Number of people in household", y = "Count") + theme_light()
-# plotting distribution of age
-bar3 <- cleaned_data %>% ggplot(aes(x = age)) + geom_histogram(aes(y = ..density..), colour = "grey", fill = "blue") +geom_density() + labs(title = "Figure 3: Age Distribution of Respondents", x = "Age", y = "Count") + theme_gray()
-# plotting distribution of marital status
-bar_4 <- cleaned_data %>% ggplot(aes(x = marital_status)) + geom_bar(aes(fill = marital_status)) + labs(title = "Figure 4: Marital Status of Respondents", x = "Marital Status", y = "Count") + theme_gray() + theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 5))
-bar1
-bar2
-bar3
-bar_4
-```
-
-
-
 # Model
 ## Logistic Model 
+
+For our purposes, we chose to use a Logistic regression model. The features of this model:
+- y = owning or renting a home
+- y = 1; The respondent's family rents a home
+- y = 0; The respondent's family has purchased their home
+- p = probability of a family renting a home
+
+$$log( \frac{{p}}{1-{p}}) = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_3 + \beta_4 x_4 + .... +  \beta_n x_n$$
+
+where the $\beta_n$ are the factored province, family income, size of household, and marital status respectively.
+
 ##Why was this model chosen? 
 
 A logistic regression model is typically chosen to model the relationship between a binary response variable and categorical/continuous predictor variables. We chose this model for several reasons:
 
 
-- This model was primarily chosen due to our choice of a binary response variable. Our response variable was **own_rent**. This is a categorical variable where 1 represents being an renter, and 0 being an owner. 
+- This model was primarily chosen due to our choice of a binary response variable. Our response variable was **own_rent**. This is a categorical variable where 1 represents being an renter, and 0 being an owner. A simple linear regression wouldn't be suitable for this purpose.
 
 - It allows us to model the relative importance of each predictor. We might find through this approach that the size of the household is not as important as household income is. This lets us focus on the most important variables for our analysis.
 
-```{r, echo = FALSE}
-# 
-model <- glm(own_rent~income_family + marital_status + province + as.factor(hh_size), family=binomial, data=cleaned_data)
+- To run this model, we are using the inbuilt glm function in R.
 
-car::vif(model)
-##since the VIF is less than 5, we can assume non multi collinearity 
+- As part of model checks and diagnostics, we ran a multi-collinearity test to see if our predictor variables correlate with each other. We utilized the vif function(calculates variance inflation factors) in the car package to run this diagnosis. Based on the output from the function, a VIF value greater than 5 indicates collinearity. All of our variables scored quite a bit below 5, indicating that our variables do not suffer from collinearity.
+
+```{r, echo = FALSE, include=FALSE}
+#fitting the model
+model <- glm(own_rent~ income_family + marital_status + province + as.factor(hh_size), family=binomial, data=cleaned_data)
 ```
+
+
+```{r, echo = FALSE, include=FALSE,eval=FALSE}
+car::vif(model)
+```
+
+
+# Results
+
+The results are split into 2 sections, model results and survey graphs.
+
+## Model Results
+
 Through fitting a model using the chosen predictor variables, we are left with the given fitted logistic model with the following coefficients:
 
 | term                                	| estimate      	| std. error 	| statistic     	| p-value       	|
 |-------------------------------------	|---------------	|------------	|---------------	|---------------	|
 | (Intercept)                         	| -1.536117e+00 	| 0.10774238 	| -1.425732e+01 	| 4.036673e-46  	|
-| income_family$125,000 and more      	| -3.199217e-01 	| 0.08724207 	| -3.667058e+00 	| 2.453574e-04  	|
-| income_family$25,000 to $49,999     	| 1.345248e+00  	| 0.07757781 	| 1.734063e+01  	| 2.321767e-67  	|
-| income_family$50,000 to $74,999     	| 7.816801e-01  	| 0.07954586 	| 9.826786e+00  	| 8.633035e-23  	|
-| income_family$75,000 to $99,999     	| 4.281441e-01  	| 0.08453086 	| 5.064944e+00  	| 4.085197e-07  	|
-| income_familyLess than $25,000      	| 1.806826e+00  	| 0.08298055 	| 2.177409e+01  	| 4.084666e-105 	|
-| marital_statusLiving common-law     	| 2.283862e-01  	| 0.08483798 	| 2.692028e+00  	| 7.101894e-03  	|
-| marital_statusMarried               	| -5.378767e-01 	| 0.07225698 	| -7.443942e+00 	| 9.772467e-14  	|
-| marital_statusSeparated             	| 7.911402e-02  	| 0.09973070 	| 7.932765e-01  	| 4.276168e-01  	|
-| marital_statusSingle, never married 	| 4.722803e-01  	| 0.06165262 	| 7.660344e+00  	| 1.854354e-14  	|
-| marital_statusWidowed               	| -5.455220e-01 	| 0.07307708 	| -7.465022e+00 	| 8.328555e-14  	|
-| provinceBritish Columbia            	| 1.458332e-01  	| 0.08180104 	| 1.782779e+00  	| 7.462229e-02  	|
-| provinceManitoba                    	| -2.353981e-01 	| 0.10114481 	| -2.327337e+00 	| 1.994731e-02  	|
-| provinceNew Brunswick               	| -3.479253e-01 	| 0.09808148 	| -3.547309e+00 	| 3.891874e-04  	|
-| provinceNewfoundland and Labrador   	| -2.477125e-01 	| 0.10562456 	| -2.345217e+00 	| 1.901602e-02  	|
-| provinceNova Scotia                 	| 4.255185e-02  	| 0.09245733 	| 4.602323e-01  	| 6.453495e-01  	|
-| provinceOntario                     	| 1.130780e-01  	| 0.07298057 	| 1.549426e+00  	| 1.212793e-01  	|
-| provincePrince Edward Island        	| 8.551564e-05  	| 0.11517302 	| 7.424972e-04  	| 9.994076e-01  	|
-| provinceQuebec                      	| 3.371717e-01  	| 0.07517409 	| 4.485211e+00  	| 7.284169e-06  	|
-|  provinceSaskatchewan               	| -1.436655e-01 	| 0.10147665 	| -1.415749e+00 	| 1.568490e-01  	|
-| as.factor(hh_size)2                 	| -4.032622e-01 	| 0.05619638 	| -7.175947e+00 	| 7.180824e-13  	|
-| as.factor(hh_size)3                 	| -3.289402e-01 	| 0.06513425 	| -5.050187e+00 	| 4.413769e-07  	|
-| as.factor(hh_size)4                 	| -5.830896e-01 	| 0.07454286 	| -7.822206e+00 	| 5.190573e-15  	|
-| as.factor(hh_size)5                 	| -5.195130e-01 	| 0.10368158 	| -5.010659e+00 	| 5.424400e-07  	|
-| as.factor(hh_size)6                 	| -4.066071e-01 	| 0.14586841 	| -2.787493e+00 	| 5.311766e-03  	|
+| Family Income >= $125,000      	      | -3.199217e-01 	| 0.08724207 	| -3.667058e+00 	| 2.453574e-04  	|
+| Family Income between $25,000 to $49,999     	| 1.345248e+00  	| 0.07757781 	| 1.734063e+01  	| 2.321767e-67  	|
+| Family Income between $50,000 to $74,999     	| 7.816801e-01  	| 0.07954586 	| 9.826786e+00  	| 8.633035e-23  	|
+| Family Income between $75,000 to $99,999     	| 4.281441e-01  	| 0.08453086 	| 5.064944e+00  	| 4.085197e-07  	|
+| Family Income less than $25,000      	| 1.806826e+00  	| 0.08298055 	| 2.177409e+01  	| 4.084666e-105 	|
+| Marital Status: Living common-law     	| 2.283862e-01  	| 0.08483798 	| 2.692028e+00  	| 7.101894e-03  	|
+| Marital Status: Married               	| -5.378767e-01 	| 0.07225698 	| -7.443942e+00 	| 9.772467e-14  	|
+| Marital Status: Separated             	| 7.911402e-02  	| 0.09973070 	| 7.932765e-01  	| 4.276168e-01  	|
+| Marital Status: Single, never married 	| 4.722803e-01  	| 0.06165262 	| 7.660344e+00  	| 1.854354e-14  	|
+| Marital Status: Widowed               	| -5.455220e-01 	| 0.07307708 	| -7.465022e+00 	| 8.328555e-14  	|
+| Province: British Columbia            	| 1.458332e-01  	| 0.08180104 	| 1.782779e+00  	| 7.462229e-02  	|
+| Province: Manitoba                    	| -2.353981e-01 	| 0.10114481 	| -2.327337e+00 	| 1.994731e-02  	|
+| Province: New Brunswick               	| -3.479253e-01 	| 0.09808148 	| -3.547309e+00 	| 3.891874e-04  	|
+| Province: Newfoundland and Labrador   	| -2.477125e-01 	| 0.10562456 	| -2.345217e+00 	| 1.901602e-02  	|
+| Province: Nova Scotia                 	| 4.255185e-02  	| 0.09245733 	| 4.602323e-01  	| 6.453495e-01  	|
+| Province: Ontario                     	| 1.130780e-01  	| 0.07298057 	| 1.549426e+00  	| 1.212793e-01  	|
+| Province: Prince Edward Island        	| 8.551564e-05  	| 0.11517302 	| 7.424972e-04  	| 9.994076e-01  	|
+| Province: Quebec                      	| 3.371717e-01  	| 0.07517409 	| 4.485211e+00  	| 7.284169e-06  	|
+| Province: Saskatchewan               	| -1.436655e-01 	| 0.10147665 	| -1.415749e+00 	| 1.568490e-01  	|
+| Size of household: 2                 	| -4.032622e-01 	| 0.05619638 	| -7.175947e+00 	| 7.180824e-13  	|
+| Size of household: 3                 	| -3.289402e-01 	| 0.06513425 	| -5.050187e+00 	| 4.413769e-07  	|
+| Size of household: 4                 	| -5.830896e-01 	| 0.07454286 	| -7.822206e+00 	| 5.190573e-15  	|
+| Size of household: 5                 	| -5.195130e-01 	| 0.10368158 	| -5.010659e+00 	| 5.424400e-07  	|
+| Size of household: 6                 	| -4.066071e-01 	| 0.14586841 	| -2.787493e+00 	| 5.311766e-03  	|
 
-# Results
+
+```{r,echo=FALSE, message=FALSE}
+plot_model(model, vline.color = "red", sort.est = TRUE, title = "Figure 5: Odds Ratios of the Logistic Regression model")
+```
+## Survey Results
+
+These results are different trends and charts that will be used to supplement the conclusions drawn from the model in the discussion section.
+
+
+```{r, echo=FALSE, message=FALSE}
+cleaned_data %>% 
+  group_by(income_family, hh_size) %>% 
+  tally() %>% 
+  ggplot(aes(x = hh_size, y = n)) + 
+  geom_col() + 
+  facet_wrap(~income_family) +
+  labs(title = "Figure 6: Distribution of Household size by household income",
+       x = "Household Size",
+       y = "Count",
+       caption = "Source: GSS 2017 Data")
+```
+Figure 7 shows the distribution of household sizes when grouped by household income. We observe that respondents below a $50,000 income bracket are overwhelmingly one and 2 people households.
+
+
+```{r, echo=FALSE, message=FALSE}
+cleaned_data %>% 
+  group_by(income_family, own_rent) %>% 
+  tally() %>% 
+  ggplot(aes(x = own_rent, y = n)) + 
+  geom_col() + 
+  facet_wrap(~income_family) +
+  labs(title = "Figure 7: Distribution of ownership status by household income",
+       subtitle = "0 being an owner, 1 being a renter",
+       x = "Ownership Status",
+       y = "Count",
+       caption = "Source: GSS 2017 Data")
+```
+
+```{r, echo=FALSE, message=FALSE}
+cleaned_data %>% 
+  group_by(income_family, marital_status) %>% 
+  tally() %>% 
+  ggplot(aes(x = marital_status, y = n)) + 
+  geom_col() + coord_flip() +
+  facet_wrap(~income_family) +
+  labs(title = "Figure 8: Distribution of household income by marital status",
+       x = "Marital Status",
+       y = "Count",
+       caption = "Source: GSS 2017 Data")
+```
+
+
+```{r, echo=FALSE, message=FALSE}
+cleaned_data %>% 
+  group_by(province, own_rent) %>%
+  tally() %>% 
+  ggplot(aes(x = own_rent, y = n)) + 
+  geom_col() +
+  facet_wrap(~province) +
+  labs(title = "Figure 9: Distribution of ownership status by Province",
+       subtitle = "0 being an owner, 1 being a renter",
+       x = "Ownership Status",
+       y = "Count",
+       caption = "Source: GSS 2017 Data")
+```
 
 
 
 # Discussion
 
-As mentioned in the introduction, this data represents an interesting snapshot of time. As this survey was conducted in 2017, this represents our pre-covid world. When this survey is conducted again in 2022, it'll be interesting to remodel these relationships and see how they have changed due to a significant event. We suspect that since remote work has become significantly more acceptable, with multiple large companies letting employees work from home permanently even once things return to normal, families are more likely to own a house. This conclusion is based on several factors. Since there is no requirement to remain close to corporate hubs such as Toronto, families can now move out of the city to cheaper cities. This reduces the cost barrier. This effect could trickle down in many ways, for instance, we might see that lots of families that made below $125,000 may now choose to purchase houses. There is also a chance that this might not be nearly as pronounced, the acceptance of remote work at a permanent level may still only be acceptable to those working in industries that
+- As mentioned in the introduction, this data represents an interesting snapshot of time. As this survey was conducted in 2017, this represents our pre-covid world. When this survey is conducted again in 2022, it'll be interesting to remodel these relationships and see how they have changed due to a significant event. We suspect that since remote work has become significantly more acceptable, with multiple large companies letting employees work from home permanently even once things return to normal, families are more likely to own a house. This conclusion is based on several factors. Since there is no requirement to remain close to corporate hubs such as Toronto/Vancouver, families can now move out of the city to cheaper cities. This reduces the cost barrier as illustrated in the following point. This effect could trickle down in many ways, for instance, we might see an increased number of owners in some income brackets. There is also a chance that this might not be nearly as pronounced, the acceptance of remote work at a permanent level may still only be acceptable to those working in industries that can function without minimal contact. The survey does track the industry that the respondent works in. Using this information, it would be interesting to see if there any trends in the distribution of home-owners by industry in a pre and post covid world. 
 
+- Looking at the odds-ratios in our model, we can see that household income has a pronounced effect on renting vs owning. For instance, households with income less than \$25,000 are significantly more likely to rent than others. This may come as no surprise since it's likely that households with that income aren't going to be saving nearly enough for basic needs. The Canadian Federal government utilizes a *MBM*(Market Basket Measure) as the official poverty line. The MBM represents the money needed for a family of 4 to meet their basic needs. The number varies from province to province, and whether they are part of a rural area or a large urban hub. Toronto has an MBM of \$48,000 for a family of 4 and an MBM of \$20,298 for a single person. Figure 7 shows that a considerable number of households in those income brackets below \$50,000 consist of 1-2 people households. In-spite of there being quite a few respondents under the MBM, Figure 8 indicates that roughly 40% of respondents making less than $25,000 own a property. This is quite a staggering result. In every income bracket after that, most of the respondents own the property. 
 
+- A caveat to the above conclusion is the lack of context around location. While one of our predictors is the province, the prices of a house in Toronto are significantly higher than a house in Sudbury. For context, the average price of a single detached home in Toronto is \$1.4M, whereas the average price of a single detached in Sudbury is \$300,000. Clearly, there is a price discrepancy within a single province. This is somewhat reflected in the model as well, the log odds for a resident of Ontario is quite close to 1, indicating a slight positive association. We notice that other provinces tend to be negatively associated with renting. This is confirmed in Figure 10 
+
+- According to Figure 5, our model reports that a widower or a married person has a strong negative association with renting their property-meaning they are more likely to own. This makes sense as high income brackets tend to have significantly more married respondents. While that partly explains why married respondents own a house, the same cannot be said for widowers, they aren't strongly represented in a high income bracket. It is possible that their current house ownership is more reflective of their past income, when they had a partner to supplement it and thus afford to own a property. We actually observe a positive association with renting when looking at households with common-law arrangements. This is also in line with the financial conclusions of drawn above, they are fairly equally represented in each income bracket whereas married respondents have a strong skew in both the overall distribution(Figure 2) and when looking at high incomes(Figure 8). This tells us a few things, the pooling effect of 2 incomes is perhaps not as strong in common-law unions as it is in marriages. Also, those in common-law unions are less likely to own a house. Potential weaknesses of this marital status association with
+
+- 
 
 
 ## References
 
 
 
-
-H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
+Hadley Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
 
 Hadley Wickham, Jim Hester and Romain Francois (2018). readr: Read Rectangular Text Data. R package version 1.3.1.
   https://CRAN.R-project.org/package=readr
@@ -196,10 +308,16 @@ JJ Allaire and Yihui Xie and Jonathan McPherson and Javier Luraschi and Kevin Us
   Wickham and Joe Cheng and Winston Chang and Richard Iannone (2020). rmarkdown: Dynamic Documents for R. R package
   version 2.3. URL https://rmarkdown.rstudio.com.
   
- R Core Team (2020). R: A language and environment for statistical computing. R Foundation for Statistical
+Lüdecke D (2020). _sjPlot: Data Visualization for Statistics in Social Science_. R package version 2.8.5, <URL:
+https://CRAN.R-project.org/package=sjPlot>.
+
+Rohan Alexander and Sam Caetano (2020). GSS cleaning. University of Toronto, rohan.alexander@utoronto.ca
+
+R Core Team (2020). R: A language and environment for statistical computing. R Foundation for Statistical
   Computing, Vienna, Austria. URL https://www.R-project.org/.
   
-Rohan Alexander and Sam Caetano (2020). GSS cleaning. University of Toronto, rohan.alexander@utoronto.ca
+Statistics Canada. Table 11-10-0066-01 Market Basket Measure (MBM) thresholds for the reference family by Market Basket Measure region, component and base year
+  
 
 Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686,
   https://doi.org/10.21105/joss.01686
@@ -220,5 +338,5 @@ https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&SDDS=4501
 
 https://www.tandfonline.com/doi/full/10.1080/17549175.2020.1726797?scroll=top&needAccess=true
 
-https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&SDDS=4501
+Statistics Canada. (2017). General social survey (GSS)
 
