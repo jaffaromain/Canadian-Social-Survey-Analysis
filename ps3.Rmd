@@ -37,12 +37,12 @@ The outcome we are trying to predict, is a binary value. As a result, a logistic
 y = owning or renting a home
 y = 1; The respondent's family rents a home
 y = 0; The respondent's family has purchased their home
+p = probability of a family renting a home
 
-$$Pr(y_i = 1) = \mbox{logit}^{-1}\left(\alpha^{age}_{a[i]} + \alpha^{marital}_{m[i]} + \alpha^{size}_{s[i]} + \alpha^{income}_{n[i]}\right) $$
+$$log( \frac{{p}}{1-{p}}) = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_3 + \beta_4 x_4 + .... +  \beta_n x_n$$
 
-where the $\alpha$ are province, family income, size of household,  and marital status, respectively. These are modeled as:
-$$\alpha^{variable}_i \sim N(0, \sigma_{variable})\mbox{ for }i = 1, 2, \ldots, I$$,
 
+where the $\beta_n$ are the factored province, family income, size of household, and marital status respectively.
 # Data
 
 To procure this data, we have used the script provided Professor Rohan Alexander. This script loads in the raw GSS data, cleans it up, and leaves the final result for us to do our analysis. We're using the most recently done survey. This was held in 2017. 
@@ -134,19 +134,46 @@ A logistic regression model is typically chosen to model the relationship betwee
 
 - It allows us to model the relative importance of each predictor. We might find through this approach that the size of the household is not as important as household income is. This lets us focus on the most important variables for our analysis.
 
-```{r}
+```{r, echo = FALSE}
 # 
-model <- stan_glm(own_rent~income_family + marital_status + province + hh_size, family=binomial(link = "logit"), data=cleaned_data)
-
-summary(model)
+model <- glm(own_rent~income_family + marital_status + province + as.factor(hh_size), family=binomial, data=cleaned_data)
 
 car::vif(model)
 ##since the VIF is less than 5, we can assume non multi collinearity 
-
-
-
 ```
+Through fitting a model using the chosen predictor variables, we are left with the given fitted logistic model with the following coefficients:
+
+| term                                	| estimate      	| std. error 	| statistic     	| p-value       	|
+|-------------------------------------	|---------------	|------------	|---------------	|---------------	|
+| (Intercept)                         	| -1.536117e+00 	| 0.10774238 	| -1.425732e+01 	| 4.036673e-46  	|
+| income_family$125,000 and more      	| -3.199217e-01 	| 0.08724207 	| -3.667058e+00 	| 2.453574e-04  	|
+| income_family$25,000 to $49,999     	| 1.345248e+00  	| 0.07757781 	| 1.734063e+01  	| 2.321767e-67  	|
+| income_family$50,000 to $74,999     	| 7.816801e-01  	| 0.07954586 	| 9.826786e+00  	| 8.633035e-23  	|
+| income_family$75,000 to $99,999     	| 4.281441e-01  	| 0.08453086 	| 5.064944e+00  	| 4.085197e-07  	|
+| income_familyLess than $25,000      	| 1.806826e+00  	| 0.08298055 	| 2.177409e+01  	| 4.084666e-105 	|
+| marital_statusLiving common-law     	| 2.283862e-01  	| 0.08483798 	| 2.692028e+00  	| 7.101894e-03  	|
+| marital_statusMarried               	| -5.378767e-01 	| 0.07225698 	| -7.443942e+00 	| 9.772467e-14  	|
+| marital_statusSeparated             	| 7.911402e-02  	| 0.09973070 	| 7.932765e-01  	| 4.276168e-01  	|
+| marital_statusSingle, never married 	| 4.722803e-01  	| 0.06165262 	| 7.660344e+00  	| 1.854354e-14  	|
+| marital_statusWidowed               	| -5.455220e-01 	| 0.07307708 	| -7.465022e+00 	| 8.328555e-14  	|
+| provinceBritish Columbia            	| 1.458332e-01  	| 0.08180104 	| 1.782779e+00  	| 7.462229e-02  	|
+| provinceManitoba                    	| -2.353981e-01 	| 0.10114481 	| -2.327337e+00 	| 1.994731e-02  	|
+| provinceNew Brunswick               	| -3.479253e-01 	| 0.09808148 	| -3.547309e+00 	| 3.891874e-04  	|
+| provinceNewfoundland and Labrador   	| -2.477125e-01 	| 0.10562456 	| -2.345217e+00 	| 1.901602e-02  	|
+| provinceNova Scotia                 	| 4.255185e-02  	| 0.09245733 	| 4.602323e-01  	| 6.453495e-01  	|
+| provinceOntario                     	| 1.130780e-01  	| 0.07298057 	| 1.549426e+00  	| 1.212793e-01  	|
+| provincePrince Edward Island        	| 8.551564e-05  	| 0.11517302 	| 7.424972e-04  	| 9.994076e-01  	|
+| provinceQuebec                      	| 3.371717e-01  	| 0.07517409 	| 4.485211e+00  	| 7.284169e-06  	|
+|  provinceSaskatchewan               	| -1.436655e-01 	| 0.10147665 	| -1.415749e+00 	| 1.568490e-01  	|
+| as.factor(hh_size)2                 	| -4.032622e-01 	| 0.05619638 	| -7.175947e+00 	| 7.180824e-13  	|
+| as.factor(hh_size)3                 	| -3.289402e-01 	| 0.06513425 	| -5.050187e+00 	| 4.413769e-07  	|
+| as.factor(hh_size)4                 	| -5.830896e-01 	| 0.07454286 	| -7.822206e+00 	| 5.190573e-15  	|
+| as.factor(hh_size)5                 	| -5.195130e-01 	| 0.10368158 	| -5.010659e+00 	| 5.424400e-07  	|
+| as.factor(hh_size)6                 	| -4.066071e-01 	| 0.14586841 	| -2.787493e+00 	| 5.311766e-03  	|
+
 # Results
+
+
 
 # Discussion
 
