@@ -72,7 +72,7 @@ household_size <- cleaned_data %>%
   ggplot(aes(x = hh_size)) + 
   geom_bar(fill = "blue") + 
   labs(title = "Figure 3: Distribution of Household Size", 
-       x = "Number of people in household", 
+       x = "Number of people in a household", 
        y = "Count",
        caption = "Source: GSS 2017") + 
   theme_light()
@@ -191,10 +191,12 @@ car::vif(model)
 
 # Results
 
+As we can see in figure 1, there are 6 different income groups in the data set. As mentioned previously, the questions pertaining to income in the data set high non-response rates. However when observing data from 2016 census data, we can see that the sample follows the same trends, such as the family income brackets with the largest proportion of respondents being \$125 000 and more, with \$25 000 - $49 000 coming in second. This suggests that the proportions we have for each income bracket is a good representation of family household in Canada. 
+
 ```{r, echo=FALSE}
 income_dist
 ```
-
+In figure 2, we can see that most respondents of the survey are married, and the least number of respondents are separated. Similar to the above graph, the distribution closely follows the census data.
 
 ```{r, echo=FALSE}
 marital_status_dist
@@ -209,10 +211,7 @@ household_size
 ```{r, echo=FALSE}
 province_dist
 ```
-
-As we can see in figure 1, there are 6 different income groups in the data set. As mentioned previously, the, questions pertaining to income in the data set high non-response rates. However when observing data from 2016 census data, we can see that the sample follows the same trends, such as the family income brackets with the largest proportion of respondents being \$125 000 and more, with \$25 000 - $49 000 coming in second. This suggests that the proportions we have for each income bracket is a good representation of family household in Canada. 
-
-In figure 2, we can see that most respondents of the survey are married, and the least number of respondents are separated. In figure 3, we see that the highest number of respondents belong to a two-person household. 
+In figure 3, we see that the highest number of respondents belong to a two-person household. 
 
 In figure 4, we can see that an overwhelming amount of respondents reside in Ontario, with Quebec coming in second. According to a 2016 census, Ontario and Quebec had the largest population counts, with other provinces also following a pattern similar to the census data. The distribution of population count from the census data can be found in the appendix.
 
@@ -240,7 +239,7 @@ cleaned_data %>%
        y = "Count",
        caption = "Source: GSS 2017 Data")
 ```
-Figure 6 shows the distribution of household sizes when grouped by household income. We observe that respondents below a $50,000 income bracket are overwhelmingly one and 2 people households.
+Figure 6 shows the distribution of household sizes when grouped by household income. We observe that respondents below a $50,000 income bracket are overwhelmingly one and two people households.
 
 
 ```{r, echo=FALSE, message=FALSE}
@@ -269,7 +268,7 @@ cleaned_data %>%
        y = "Count",
        caption = "Source: GSS 2017 Data")
 ```
-In figure 8, we can see that married is the highest count for marital status in all income brackets except for respondents who have a family income of less than $25 000. For these respondents, the most common marital status is single.
+In figure 8, we can see that being married is the highest count for marital status in all income brackets except for respondents who have a family income of less than $25,000. For these respondents, the most common marital status is single.
 
 ```{r, echo=FALSE, message=FALSE}
 cleaned_data %>% 
@@ -284,17 +283,17 @@ cleaned_data %>%
        y = "Count",
        caption = "Source: GSS 2017 Data")
 ```
-In figure 9, we can see that the number of those who choose to rent is higher for all provinces. However, we see a larger different in ownership status in the provinces Ontario, Quebec, and British Columbia. These provinces have a much larger proportion of those who rent.
+In figure 9, we can see that the number of those who choose to own is higher for all provinces. However, we see a larger difference in ownership status in the Ontario, Quebec, and British Columbia. These provinces have a much larger proportion of owners.
 
 
 # Discussion
 
 
-- Looking at the odds-ratios in our model, we can see that household income has a pronounced effect on renting vs owning. For instance, households with income less than \$25,000 are significantly more likely to rent than others. This may come as no surprise since it's likely that households with that income aren't going to be saving nearly enough for basic needs. The Canadian Federal government utilizes a *MBM*(Market Basket Measure) as the official poverty line. The MBM represents the money needed for a family of 4 to meet their basic needs. The number varies from province to province, and whether they are part of a rural area or a large urban hub. Toronto has an MBM of \$48,000 for a family of 4 and an MBM of \$20,298 for a single person. Figure 7 shows that a considerable number of households in those income brackets below \$50,000 consist of 1-2 people households. In-spite of there being quite a few respondents under the MBM, Figure 8 indicates that roughly 40% of respondents making less than $25,000 own a property. This is quite a staggering result. In every income bracket after that, most of the respondents own the property. 
-
-- A caveat to the above conclusion is the lack of context around location. While one of our predictors is the province, the prices of a house in Toronto are significantly higher than a house in Sudbury. For context, the average price of a single detached home in Toronto is \$1.4M, whereas the average price of a single detached in Sudbury is \$300,000. Clearly, there is a price discrepancy within a single province. This is somewhat reflected in the model as well, the log odds for a resident of Ontario is quite close to 1, indicating a slight positive association. We notice that other provinces tend to be negatively associated with renting.
-
-- According to Figure 5, our model reports that a widower or a married person has a strong negative association with renting their property-meaning they are more likely to own. This makes sense as high income brackets tend to have significantly more married respondents. While that partly explains why married respondents own a house, the same cannot be said for widowers, they aren't strongly represented in a high income bracket. It is possible that their current house ownership is more reflective of their past income, when they had a partner to supplement it and thus afford to own a property. We actually observe a positive association with renting when looking at households with common-law arrangements. This is also in line with the financial conclusions of drawn above, they are fairly equally represented in each income bracket whereas married respondents have a strong skew in both the overall distribution(Figure 2) and when looking at high incomes(Figure 8). This tells us a few things, the pooling effect of 2 incomes is perhaps not as strong in common-law unions as it is in marriages. Also, those in common-law unions are less likely to own a house.  
+  Looking at the odds-ratios in our model, we can see that household income has a pronounced effect on renting vs owning. For instance, households with income less than \$25,000 are significantly more likely to rent than others. This may come as no surprise since it's likely that households with that income aren't going to be saving nearly enough for basic needs. The Canadian Federal government utilizes a *MBM*(Market Basket Measure) as the official poverty line. The MBM represents the money needed for a family of 4 to meet their basic needs. The number varies from province to province, and whether they are part of a rural area or a large urban hub. Toronto has an MBM of \$48,000 for a family of 4 and an MBM of \$20,298 for a single person. Figure 7 shows that a considerable number of households in those income brackets below \$50,000 consist of 1-2 people households. In-spite of there being quite a few respondents under the MBM, Figure 8 indicates that roughly 40% of respondents making less than $25,000 own a property. This is quite a staggering result. In every income bracket after that, most of the respondents own the property. 
+  
+  A caveat to the above conclusion is the lack of context around location. While one of our predictors is the province, the prices of a house in Toronto are significantly higher than a house in Sudbury. For context, the average price of a single detached home in Toronto is \$1.4M, whereas the average price of a single detached in Sudbury is \$300,000. Clearly, there is a price discrepancy within a single province. This is somewhat reflected in the model as well, the log odds for a resident of Ontario is quite close to 1, indicating a slight positive association. We notice that other provinces tend to be negatively associated with renting.
+  
+  According to Figure 5, our model reports that a widower or a married person has a strong negative association with renting their property-meaning they are more likely to own. This makes sense as high income brackets tend to have significantly more married respondents. While that partly explains why married respondents own a house, the same cannot be said for widowers, they aren't strongly represented in a high income bracket. It is possible that their current house ownership is more reflective of their past income, when they had a partner to supplement it and thus afford to own a property. We actually observe a positive association with renting when looking at households with common-law arrangements. This is also in line with the financial conclusions of drawn above, they are fairly equally represented in each income bracket whereas married respondents have a strong skew in both the overall distribution(Figure 2) and when looking at high incomes(Figure 8). This tells us a few things, the pooling effect of 2 incomes is perhaps not as strong in common-law unions as it is in marriages. Also, those in common-law unions are less likely to own a house.  
 
 
 ## Weaknesses and next steps:
@@ -332,22 +331,24 @@ Long JA (2020). _jtools: Analysis and Presentation of
   
 Lüdecke D (2020). _sjPlot: Data Visualization for           Statistics in Social Science_. R package version 2.8.5,   URL: https://CRAN.R-project.org/package=sjPlot.
 
-Ontario Ministry of Finance (2020). 2016 CENSUS             HIGHLIGHTS: Factsheet                                     1.https://www.fin.gov.on.ca/en/economy/demographics/cens   us/cenhi16-1.html
+Ontario Ministry of Finance (2020). 2016 CENSUS HIGHLIGHTS: Factsheet                                     1.https://www.fin.gov.on.ca/en/economy/demographics/cens   us/cenhi16-1.html
 
 
-Rohan Alexander and Sam Caetano (2020). GSS 2017 cleaning   data. University of Toronto. file: cleaning_data.Rmd
+Rohan Alexander and Sam Caetano (2020). GSS 2017 cleaning data. University of Toronto. file: cleaning_data.Rmd
 
-R Core Team (2020). R: A language and environment for 5     statistical computing. R Foundation for Statistical
-  Computing, Vienna, Austria. https://www.R-project.org/.
+R Core Team (2020). R: A language and environment for 5 statistical computing. R Foundation for Statistical Computing, Vienna, Austria. https://www.R-project.org/.
+
+Statistics Canada. 2017. Canada [Country] and Canada [Country] (table). Census Profile. 2016 Census. Statistics Canada Catalogue no. 98-316-X2016001. Ottawa. Released November 29, 2017.
+https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/prof/index.cfm?Lang=E (accessed October 19, 2020).
   
-Statistics Canada. (2017). General social survey (GSS).     https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSur   vey&SDDS=4501
+Statistics Canada. (2017). General social survey (GSS).https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&SDDS=4501
 
-Statistics Canada (2020). Census Program.              https://www12.statcan.gc.ca/census-recensement/index-eng.cfm
+Statistics Canada (2020). Census Program.https://www12.statcan.gc.ca/census-recensement/index-eng.cfm
 
-Statistics Canada (2020). Table 11-10-0066-01 Market        Basket Measure (MBM) thresholds for the reference family   by Market Basket Measure region, component and base       year.
+Statistics Canada (2020). Table 11-10-0066-01 Market Basket Measure (MBM) thresholds for the reference family   by Market Basket Measure region, component and base       year.
 
 
-Sylvia J.T. Jansen (2020) Urban, suburban or rural?         Understanding preferences for the residential             environment, Journal of Urbanism: International Research   on Placemaking and Urban Sustainability, 13:2, 213-235,   DOI: 10.1080/17549175.2020.1726797
+Sylvia J.T. Jansen (2020) Urban, suburban or rural? Understanding preferences for the residential environment, Journal of Urbanism: International Research on Placemaking and Urban Sustainability, 13:2, 213-235,   DOI: 10.1080/17549175.2020.1726797
   
 Wickham et al., (2019). Welcome to the tidyverse. Journal   of Open Source Software, 4(43), 1686,
   https://doi.org/10.21105/joss.01686
