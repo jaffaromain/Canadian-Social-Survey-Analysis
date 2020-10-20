@@ -308,7 +308,7 @@ A variable that can be considered for further study is looking at the population
 
 ## Appendix
 figure 10
-```{r}
+```{r, echo=FALSE, message=FALSE}
 knitr::include_graphics("pop.jpg")
 
 ```
