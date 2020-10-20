@@ -51,9 +51,9 @@ cleaned_data <- gss %>%
 cleaned_data %>% as_tibble() %>% head()
 ```
 
-To create our model, we have utilized the General Social Survey produced by Statistics Canada. This data is available for a fee using Statistics Canada's Real Time Remote Access tool. To procure this data, we have used the script provided by Professor Rohan Alexander. This script loads in the raw GSS data, cleans it up, and leaves with a tidied data set for us to do our analysis. We are using the most recently done survey. This was held in 2017. This data set is rich with several interesting variables that could be used for a variety of analyses. For our purposes, we've decided to select the following variables of interest are:
+To create our model, we have utilized the General Social Survey produced by Statistics Canada. This data is available for a fee using Statistics Canada's Real Time Remote Access tool. To procure this data, we have used the script provided by Professor Rohan Alexander. This script loads in the raw GSS data, cleans it up, and leaves with a tidied data set for us to do our analysis. We are using the most recently done survey. This was held in 2017. This data set is rich with several interesting variables that could be used for a variety of analyses. For our purposes, we've decided to select the following variables of interest:
 
-- *Household Income*: This is arguably one of the most important factors for choosing to rent or own. Having a stable income and the means to purchase would be typically necessary. Barring special circumstances such as an inheritance, a buyer will need to show some sort of stable income to qualify for a mortgage as well as put down money for the down-payment. In Canada, a minimum of 5% is required for properties that are below $500,000. 
+- *Household Income*: This is arguably one of the most important factors for choosing to rent or own. Having a stable income and the means to purchase would be typically necessary. Barring special circumstances such as an inheritance, a buyer will need to show some sort of stable income to qualify for a mortgage as well as put down money for the down-payment. In Canada, a minimum of 5% is required for properties that are below $500,000. We expect to see a negative association with higher income groups and renting. 
 
 ```{r, echo=FALSE, message=FALSE}
 # plotting distribution of family incomes
@@ -118,7 +118,7 @@ The theme of this survey is family. As such, the questionnaire is designed with 
 
 ## Methodology
 
- The survey had a target population of non-institutionalized people, 15 years of age and older, living in Canada. As a sampling frame, a combination of land line and cellular telephone numbers from the Census, as well as other Statistics Canada administrative sources were used with a cross-sectional design, in which the data was collected from multiple individuals at once. The sample used a stratified probability sampling approach, dividing the 10 provinces into strata. Many of the geographic areas categorized as census metropolitan areas CMA) were considered separate strata(such as Toronto, Montreal, and Victoria). The non-CMA  areas were grouped to form 10 strata. This resulted in 27 strata in total. 
+ The survey had a target population of non-institutionalized people, 15 years of age and older, living in Canada. As a sampling frame, a combination of land line and cellular telephone numbers from the Census, as well as other Statistics Canada administrative sources were used with a cross-sectional design, in which the data was collected from multiple individuals at once. The sample used a stratified probability sampling approach, dividing the 10 provinces into strata. Many of the geographic areas categorized as census metropolitan areas CMA) were considered separate strata(such as Toronto, Montreal, and Victoria). The non-CMA areas were grouped to form 10 strata. This resulted in 27 strata in total. 
 
 ## Strengths
 
@@ -161,18 +161,12 @@ Table 1: Logistic Regression Model coefficients using GSS data
 | Family Income less than $25,000      	| 1.806826e+00  	| 0.08298055 	| 2.177409e+01  	| 4.084666e-105 	|
 | Marital Status: Living common-law     	| 2.283862e-01  	| 0.08483798 	| 2.692028e+00  	| 7.101894e-03  	|
 | Marital Status: Married               	| -5.378767e-01 	| 0.07225698 	| -7.443942e+00 	| 9.772467e-14  	|
-| Marital Status: Separated             	| 7.911402e-02  	| 0.09973070 	| 7.932765e-01  	| 4.276168e-01  	|
 | Marital Status: Single, never married 	| 4.722803e-01  	| 0.06165262 	| 7.660344e+00  	| 1.854354e-14  	|
 | Marital Status: Widowed               	| -5.455220e-01 	| 0.07307708 	| -7.465022e+00 	| 8.328555e-14  	|
-| Province: British Columbia            	| 1.458332e-01  	| 0.08180104 	| 1.782779e+00  	| 7.462229e-02  	|
 | Province: Manitoba                    	| -2.353981e-01 	| 0.10114481 	| -2.327337e+00 	| 1.994731e-02  	|
 | Province: New Brunswick               	| -3.479253e-01 	| 0.09808148 	| -3.547309e+00 	| 3.891874e-04  	|
 | Province: Newfoundland and Labrador   	| -2.477125e-01 	| 0.10562456 	| -2.345217e+00 	| 1.901602e-02  	|
-| Province: Nova Scotia                 	| 4.255185e-02  	| 0.09245733 	| 4.602323e-01  	| 6.453495e-01  	|
-| Province: Ontario                     	| 1.130780e-01  	| 0.07298057 	| 1.549426e+00  	| 1.212793e-01  	|
-| Province: Prince Edward Island        	| 8.551564e-05  	| 0.11517302 	| 7.424972e-04  	| 9.994076e-01  	|
 | Province: Quebec                      	| 3.371717e-01  	| 0.07517409 	| 4.485211e+00  	| 7.284169e-06  	|
-| Province: Saskatchewan               	| -1.436655e-01 	| 0.10147665 	| -1.415749e+00 	| 1.568490e-01  	|
 | Size of household: 2                 	| -4.032622e-01 	| 0.05619638 	| -7.175947e+00 	| 7.180824e-13  	|
 | Size of household: 3                 	| -3.289402e-01 	| 0.06513425 	| -5.050187e+00 	| 4.413769e-07  	|
 | Size of household: 4                 	| -5.830896e-01 	| 0.07454286 	| -7.822206e+00 	| 5.190573e-15  	|
@@ -185,6 +179,7 @@ model <- glm(own_rent~ income_family + marital_status + province + as.factor(hh_
 
 
 ```{r, echo = FALSE, include=FALSE,eval=FALSE}
+#this function ca
 car::vif(model)
 ```
 
@@ -216,12 +211,12 @@ In figure 3, we see that the highest number of respondents belong to a two-perso
 In figure 4, we can see that an overwhelming amount of respondents reside in Ontario, with Quebec coming in second. According to a 2016 census, Ontario and Quebec had the largest population counts, with other provinces also following a pattern similar to the census data. The distribution of population count from the census data can be found in the appendix.
 
 ```{r,echo=FALSE, message=FALSE}
-plot_model(model, vline.color = "red", sort.est = TRUE, title = "Figure 5: Odds Ratios of the Logistic Regression model")
+plot_model(model, vline.color = "red", sort.est = TRUE, title = "Figure 5: Odds Ratios of the Logistic Regression model", rm.terms = c( "provinceNova Scotia", "provinceOntario", "provincePrince Edward Island", "provinceSaskatchewan","marital_statusSeparated", "provinceBritish Columbia"))
 ```
 
 Figure 5 provides a visual of the odds ratios of the logistic model fitted to our data. The odd ratios can be used to compare the relative odds of a respondent choosing to rent a home, depending on the variable of interest. An odd ratio greater than 1 indicates increased occurrence of an event, while an odd ratio less than 1 indicated decreased occurrence of an event.
 
-By plotting these odd ratios we can see that families with incomes less than \$25 000 have the highest odd ratio. This means that a family being in this income bracket increases their odds of renting over buying a home. We can see that those odds decrease as income increases, with those earning over $125 000 having the lowest odd ratio out of all the income brackets. Having an income in this category actually decreases the odds of a family renting. When analyzing marital status, those who are single have the highest odds of renting. Those living common-law with a partner come to a second. Widowed respondents have the lowest odds of renting, followed by married respondents, where both have decreased odds of renting. A household size of 3 has the highest odds of a family renting a home, but family size overall seems to decrease the odds of a family choosing to rent. When looking at the provinces in which the respondents reside, Quebec has the highest odd ratio, followed by Ontario. Living in regions such as New Brunswick and Newfoundland decrease the odds of a family renting a home. An interest observation is that Prince Edward Island has an exact odd ratio of 1. This suggests that a respondent living in Prince Edward Island does not affect the odds of the person choosing to rent. 
+By plotting these odd ratios we can see that families with incomes less than \$25 000 have the highest odd ratio. This means that a family being in this income bracket increases their odds of renting over buying a home. We can see that those odds decrease as income increases, with those earning over $125 000 having the lowest odd ratio out of all the income brackets. Having an income in this category actually decreases the odds of a family renting. When analyzing marital status, those who are single have the highest odds of renting. Those living common-law with a partner come to a second. Widowed respondents have the lowest odds of renting, followed by married respondents, where both have decreased odds of renting. A household size of 3 has the highest odds of a family renting a home, but family size overall seems to decrease the odds of a family choosing to rent. When looking at the provinces in which the respondents reside, Quebec has the highest odd ratio, followed by Manitoba. Living in the Atlantic Provinces such as New Brunswick and Newfoundland decreases the odds of a family renting a home. An interesting observation is that Ontario, Nova Scotia, British Columbia, Saskatchewan,  and Prince Edward Island did not reach statistical significance as estimators.
 
 ## Survey Results
 
@@ -255,7 +250,7 @@ cleaned_data %>%
        y = "Count",
        caption = "Source: GSS 2017 Data")
 ```
-Figure 7 shows the distribution of ownership status household income. We can see that in income brackets larger than\$75 000 majority of respondents own their homes. The distribution of those who choose to rent is higher for those who are in the income bracket of less than $25 000.
+Figure 7 shows the distribution of ownership status household income. We can see that in income brackets larger than\$25,000, majority of respondents own their homes. The distribution of those who choose to rent is higher for those who are in the income bracket of less than $25 000.
 ```{r, echo=FALSE, message=FALSE}
 cleaned_data %>% 
   group_by(income_family, marital_status) %>% 
@@ -291,16 +286,16 @@ In figure 9, we can see that the number of those who choose to own is higher for
 
   Looking at the odds-ratios in our model, we can see that household income has a pronounced effect on renting vs owning. For instance, households with income less than \$25,000 are significantly more likely to rent than others. This may come as no surprise since it's likely that households with that income aren't going to be saving nearly enough for basic needs. The Canadian Federal government utilizes a *MBM*(Market Basket Measure) as the official poverty line. The MBM represents the money needed for a family of 4 to meet their basic needs. The number varies from province to province, and whether they are part of a rural area or a large urban hub. Toronto has an MBM of \$48,000 for a family of 4 and an MBM of \$20,298 for a single person. Figure 7 shows that a considerable number of households in those income brackets below \$50,000 consist of 1-2 people households. In-spite of there being quite a few respondents under the MBM, Figure 8 indicates that roughly 40% of respondents making less than $25,000 own a property. This is quite a staggering result. In every income bracket after that, most of the respondents own the property. 
   
-  A caveat to the above conclusion is the lack of context around location. While one of our predictors is the province, the prices of a house in Toronto are significantly higher than a house in Sudbury. For context, the average price of a single detached home in Toronto is \$1.4M, whereas the average price of a single detached in Sudbury is \$300,000. Clearly, there is a price discrepancy within a single province. This is somewhat reflected in the model as well, the log odds for a resident of Ontario is quite close to 1, indicating a slight positive association. We notice that other provinces tend to be negatively associated with renting.
+  A caveat to the above conclusion is the lack of context around location. While one of our predictors is the province, the prices of a house in Toronto are significantly higher than a house in Sudbury. For context, the average price of a single detached home in Toronto is \$1.4M, whereas the average price of a single detached in Sudbury is \$300,000. Clearly, there is a price discrepancy within a single province. Our model didn't find most of the provinces to have any statistically significant effect on the outcome. It is possible that these provinces have strong price disparities resulting in an equal share of renters and owners. In such a province, an individual is equally likely to own as they are to rent.
   
-  According to Figure 5, our model reports that a widower or a married person has a strong negative association with renting their property-meaning they are more likely to own. This makes sense as high income brackets tend to have significantly more married respondents. While that partly explains why married respondents own a house, the same cannot be said for widowers, they aren't strongly represented in a high income bracket. It is possible that their current house ownership is more reflective of their past income, when they had a partner to supplement it and thus afford to own a property. We actually observe a positive association with renting when looking at households with common-law arrangements. This is also in line with the financial conclusions of drawn above, they are fairly equally represented in each income bracket whereas married respondents have a strong skew in both the overall distribution(Figure 2) and when looking at high incomes(Figure 8). This tells us a few things, the pooling effect of 2 incomes is perhaps not as strong in common-law unions as it is in marriages. Also, those in common-law unions are less likely to own a house.  
+  According to Figure 5, our model reports that a widower or a married person has a strong negative association with renting their property-meaning they are more likely to own. This makes sense as high income brackets tend to have significantly more married respondents. While that partly explains why married respondents own a house, the same cannot be said for widowers, they aren't strongly represented in a high income bracket. It is possible that their current house ownership is more reflective of their past income, when they had a partner to supplement it and thus afford to own a property. We actually observe a positive association with renting when looking at households with common-law arrangements. This is also in line with the financial conclusions of drawn above, they are fairly equally represented in each income bracket whereas married respondents have a strong skew in both the overall distribution(Figure 2) and when looking at high incomes(Figure 8). This tells us a few things, the pooling effect of 2 incomes is perhaps not as strong in common-law unions as it is in marriages. Also, those in common-law unions are less likely to own a house. One study reports that 1 in 4 millenial married Americans purchased their home before even getting married(Coldwell Banker, 2013). While this is far from being the norm and we don't have a way of a validating this through our data, we might see an increase in more common-law unions buying houses. Married couples may also qualify for better mortgage rates as a result of their pooled incomes, this would make house ownership more affordable as well.
 
 
 ## Weaknesses and next steps:
 
-Some literature has established an interactive effect between certain variables(Li, 1977). Our model does not incorporate such interactions and is thus missing out on some significant interactions. While the variables we picked are well established in the literature, we missed out on an opportunity to include some other well established variables that would've let some more unique findings(Xhignesse et al, 2014). For instance, research has shown that ethnicity plays a role in home ownership(Li, 1977). In Toronto, certain ethnic minorities such as African and Caribbean minorities exhibit much lower rates of ownership, even when minimizing financial differences(Xhignesse et al, 2014). The GSS has included ethnicity and whether a respondent is part of a visible minority as variables. Replicating that study in 2020 provides us with an opportunity to assess whether social development policies have been effective. 
+Some literature has established an interactive effect between certain variables(Li, 1977). Our model does not incorporate such interactions and is thus missing out on some significant interactions. While the variables we picked are well established in the literature, we missed out on an opportunity to include some other well established variables that would've let some more unique findings(Xhignesse et al, 2014). For instance, research has shown that ethnicity plays a role in home ownership(Li, 1977). In Toronto, certain ethnic minorities such as African and Caribbean minorities exhibit much lower rates of ownership, even when minimizing financial differences(Xhignesse et al, 2014). The GSS has included ethnicity and whether a respondent is part of a visible minority as variables. Replicating that study in 2020 provides us with an opportunity to assess whether social development policies have been effective. In another iteration of this model, we would consider adding ethnicity and gender of the respondent. There is literature that shows that both factors affect ownership(Xhignesse et al, 2014) and are likely changing due to changing demographics.
 
-A variable that can be considered for further study is looking at the population center of the respondent. This would allow us to investigate the choices of those living in urban population centers compared to small rural/non-ruban areas. This is highly relevant in areas in Ontario, where housing is very expensive in urban bubbles such as Toronto, compared to areas in Ontario such as Kawartha Lakes. 
+A variable that can be considered for further study is looking at the population center of the respondent. This would allow us to investigate the choices of those living in urban population centers compared to small rural/non-ruban areas. This is highly relevant in areas in Ontario, where housing is very expensive in urban bubbles such as Toronto, compared to areas in Ontario such as Kawartha Lakes. To add on to population center, the cost of living(COL) and property prices would be interesting variables for us to look at. By adding both, we get to contextualize the provincial trends of owning vs renting. Even though houses in Toronto may be significantly more expensive than a comparatively equipped house in Sudbury, it is unlikely that the cost of living in either place is the same. The salaries in more expensive areas likely reflect the COL.
 
 ## Appendix
 figure 10
@@ -312,24 +307,30 @@ knitr::include_graphics("pop.jpg")
 All code for this report and corresponding rmd file can be found at: "https://github.com/jaffaromain/Canadian-Social-Survey-Analysis"
 
 ## References
+
+
+Coldwell Banker Real Estate, “Marriage and Homebuying Study,” April 2013.
+
+Government of Canada. Statistics Act (2020).https://laws-lois.justice.gc.ca/eng/acts/S-19/FullText.html
+
+Hadley Wickham (2016). ggplot2: Elegant Graphics for Data Analysis.Springer-Verlag New York
+
+Hadley Wickham, Jim Hester and Romain Francois (2018).readr: Read Rectangular Text Data. R package version 1.3.1. https://CRAN.R-project.org/package=readr
  
-Government of Canada. Statistics Act (2020).                https://laws-lois.justice.gc.ca/eng/acts/S-19/FullText.h   tml
+John Fox and Sanford Weisberg (2019). An {R} Companion to Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL: https://socialsciences.mcmaster.ca/jfox/Books/Companion/
 
-Hadley Wickham (2016). ggplot2: Elegant Graphics for Data   Analysis. Springer-Verlag New York
 
-Hadley Wickham, Jim Hester and Romain Francois (2018).     readr: Read Rectangular Text Data. R package version      1.3.1.
- https://CRAN.R-project.org/package=readr
+JJ Allaire and Yihui Xie and Jonathan McPherson and Javier Luraschi and Kevin Ushey and Aron Atkins and Hadley Wickham and Joe Cheng and Winston Chang and Richard Iannone (2020). rmarkdown: Dynamic Documents for R. R package version 2.3. URL https://rmarkdown.rstudio.com
 
-JJ Allaire and Yihui Xie and Jonathan McPherson and Javier  Luraschi and Kevin Ushey and Aron Atkins and Hadley
- Wickham and Joe Cheng and Winston Chang and Richard       Iannone (2020). rmarkdown: Dynamic Documents for R. R     package version 2.3. URL https://rmarkdown.rstudio.com.
+Li, M. (1977). A Logit Model of Homeownership.Econometrica, 45(5), 1081-1097. doi:10.2307/1914060
 
-Li, M. (1977). A Logit Model of Homeownership.              Econometrica, 45(5), 1081-1097. doi:10.2307/1914060
-
-Long JA (2020). _jtools: Analysis and Presentation of
-  Social Scientific Data_. R package version 2.1.0,
-  URL: https://cran.r-project.org/package=jtools.
+Long JA (2020). _jtools: Analysis and Presentation of Social Scientific Data_. R package version 2.1.0, URL: https://cran.r-project.org/package=jtools.
   
-Lüdecke D (2020). _sjPlot: Data Visualization for           Statistics in Social Science_. R package version 2.8.5,   URL: https://CRAN.R-project.org/package=sjPlot.
+Lüdecke D (2020). _sjPlot: Data Visualization for Statistics in Social Science_. R package version 2.8.5,   URL: https://CRAN.R-project.org/package=sjPlot.
+
+McNutt, L. (2020). 2020 FALL MARKET OUTLOOK REPORT. Retrieved 20 October 2020, from https://blog.remax.ca/canadian-housing-market-outlook/
+
+National Price Map – CREA. (2020). Retrieved 20 October 2020, from https://www.crea.ca/housing-market-stats/national-price-map/
 
 Ontario Ministry of Finance (2020). 2016 CENSUS HIGHLIGHTS: Factsheet                                     1.https://www.fin.gov.on.ca/en/economy/demographics/cens   us/cenhi16-1.html
 
@@ -345,29 +346,22 @@ Statistics Canada. (2017). General social survey (GSS).https://www23.statcan.gc.
 
 Statistics Canada (2020). Census Program.https://www12.statcan.gc.ca/census-recensement/index-eng.cfm
 
-Statistics Canada (2020). Table 11-10-0066-01 Market Basket Measure (MBM) thresholds for the reference family   by Market Basket Measure region, component and base       year.
+Statistics Canada (2020). Table 11-10-0066-01 Market Basket Measure (MBM) thresholds for the reference family by Market Basket Measure region, component and base year.
 
 
 Sylvia J.T. Jansen (2020) Urban, suburban or rural? Understanding preferences for the residential environment, Journal of Urbanism: International Research on Placemaking and Urban Sustainability, 13:2, 213-235,   DOI: 10.1080/17549175.2020.1726797
   
-Wickham et al., (2019). Welcome to the tidyverse. Journal   of Open Source Software, 4(43), 1686,
+Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686,
   https://doi.org/10.21105/joss.01686
   
-Xhignesse, Guillaume & Bianchet, Bruno & Cools, Mario &     Gathon, Henry-Jean & Jurion, Bernard & Teller, Jacques.   (2014). An Econometric Analysis of Homeownership
-  Determinants in Belgium. 8581. 65-79.   10.1007/978-3-319-09150-1_6. 
+Xhignesse, Guillaume & Bianchet, Bruno & Cools, Mario & Gathon, Henry-Jean & Jurion, Bernard & Teller, Jacques.(2014).An Econometric Analysis of Homeownership Determinants in Belgium. 8581. 65-79.10.1007/978-3-319-09150-1_6. 
 
-Yihui Xie (2020). knitr: A General-Purpose Package for      Dynamic Report Generation in R. R package
-  version 1.30.
+Yihui Xie (2020). knitr: A General-Purpose Package for Dynamic Report Generation in R. R package version 1.30.
   
-Yihui Xie (2020). tinytex: Helper Functions to Install and   Maintain TeX Live, and Compile LaTeX Documents. R
-  package version 0.26.
+Yihui Xie (2020). tinytex: Helper Functions to Install and   Maintain TeX Live, and Compile LaTeX Documents. R package version 0.26.
   
-Yihui Xie and J.J. Allaire and Garrett Grolemund (2018). R   Markdown: The Definitive Guide. Chapman and Hall/CRC.
-  ISBN 9781138359338. URL   https://bookdown.org/yihui/rmarkdown.
+Yihui Xie and J.J. Allaire and Garrett Grolemund (2018). R   Markdown: The Definitive Guide. Chapman and Hall/CRC. ISBN 9781138359338. URL   https://bookdown.org/yihui/rmarkdown.
   
 
-
-
-http://tug.org/TUGboat/Contents/contents40-1.html
 
 
