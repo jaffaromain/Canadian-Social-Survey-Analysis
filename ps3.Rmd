@@ -1,5 +1,5 @@
 ---
-title: "Estimating The Probability of Canadian Home-ownership Status Using Demographic Data"
+title: "Estimating The Probability of Canadian Home-ownership Status Using Demographic Data."
 author: 'Jaffa Romain, Anees Shaikh'
 date: "10/10/2020"
 repo: "https://github.com/jaffaromain/Canadian-Social-Survey-Analysis"
@@ -27,6 +27,7 @@ library(knitr)
 
 gss <- read_csv("gss.csv")
 ```
+Code and data supporting this analysis can be found at https://github.com/jaffaromain/Canadian-Social-Survey-Analysis
 
 # Abstract
 
@@ -42,6 +43,10 @@ The report starts with exploring the data. In this section, we detail the questi
 
 # Data
 ```{r, echo = FALSE, message=FALSE}
+
+
+##All data was cleaned and processed in cleaning_data.Rmd, this was cleaned using a script provided by Professor Rohan Alexander.
+
 ## retrieving variables needed and filtering out possible NA values
 cleaned_data <- gss %>% 
   select(marital_status, income_family, own_rent, hh_size, province) %>% 
@@ -135,7 +140,7 @@ Some of the questions may be perceived as intrusive, questions regarding the res
 # Model
 ##  Our choice of model: The Logistic Model
 
-A logistic regression model is typically chosen to model the relationship between a binary response variable and categorical/continuous predictor variable. This model was primarily chosen due to our choice of a binary response variable, the decision to own or rent a property. Using this model allows us to predict the probability of an occurrence by fitting the data to a logit functions. Using this model also does not require the assumption of the normailty of independent variables. This is a categorical variable where 1 represents being a renter, and 0 being an owner. The inputs to our model are the household income, marital status, household size, and the province in which they reside. As mentioned in the Data section, this data was pulled from the 2017 GSS dataset. Our model aims to estimate the model of homeownership. In our model, provinces are  p in the set of {Ontario, Alberta, British Columbia, Newfoundland and Labrador, Nova Scotia, Prince Edward Island, Quebec, Saskatchewan, Manitoba}. It allows us to model the relative importance of each predictor. We might find through this approach that the size of the household is not as important as household income is. This lets us focus on the most important variables for our analysis. Our decision to use a logistic regression to model ownership status has been well established in previous studies(Li, 1977), and particularly effective for house ownership analysis(Xhignesse et al, 2014). Linearly additive models have been noted to not be suitable for the task as they fail to model key interaction effects and are "inconsistent with the expectation of nonlinear effects"(Li,1977). Similar to our model, Mingche used variables such as "Income, family size, age of head, and race of head"(Li, 1977) as determinants of homeownership. As part of model checks and diagnostics, we ran a multi-collinearity test to see if our predictor variables correlate with each other. We utilized the vif function(calculates variance inflation factors) in the car package to run this diagnosis. Based on the output from the function, a VIF value greater than 5 indicates collinearity. All of our variables scored quite a bit below 5, indicating that our variables do not suffer from collinearity. We have fitted this model using the in-built **glm** function using the R language.
+A logistic regression model is typically chosen to model the relationship between a binary response variable and categorical/continuous predictor variable. This model was primarily chosen due to our choice of a binary response variable, the decision to own or rent a property. Using this model allows us to predict the probability of an occurrence by fitting the data to a logit functions. Using this model also does not require the assumption of the normality of independent variables. This is a categorical variable where 1 represents being a renter, and 0 being an owner. The inputs to our model are the household income, marital status, household size, and the province in which they reside. As mentioned in the Data section, this data was pulled from the 2017 GSS dataset. Our model aims to estimate the model of homeownership. In our model, provinces are  p in the set of {Ontario, Alberta, British Columbia, Newfoundland and Labrador, Nova Scotia, Prince Edward Island, Quebec, Saskatchewan, Manitoba}. It allows us to model the relative importance of each predictor. We might find through this approach that the size of the household is not as important as household income is. This lets us focus on the most important variables for our analysis. Our decision to use a logistic regression to model ownership status has been well established in previous studies(Li, 1977), and particularly effective for house ownership analysis(Xhignesse et al, 2014). Linearly additive models have been noted to not be suitable for the task as they fail to model key interaction effects and are "inconsistent with the expectation of nonlinear effects"(Li,1977). Similar to our model, Mingche used variables such as "Income, family size, age of head, and race of head"(Li, 1977) as determinants of homeownership. As part of model checks and diagnostics, we ran a multi-collinearity test to see if our predictor variables correlate with each other. We utilized the vif function(calculates variance inflation factors) in the car package to run this diagnosis. Based on the output from the function, a VIF value greater than 5 indicates collinearity. All of our variables scored quite a bit below 5, indicating that our variables do not suffer from collinearity. We have fitted this model using the in-built **glm** function using the R language.
 
 To represent the binary outcome, a dummy variable is used for predicting the outcome.
 - y = owning or renting a home
@@ -145,8 +150,9 @@ To represent the binary outcome, a dummy variable is used for predicting the out
 
 
 $$log(p/1-p) = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_3 + \beta_4 x_4 + .... +  \beta_n x_n$$ 
-where the $\beta_n$ are the province, household income, factored size of household, and marital status parameter of the fitted model respectively, n represents the number of coefficients in our model, and x represents input values from observations (for example, x1 = Province, B1 = Province parameter).
-p(1-p) is the odds ratio, which can be used to compare the relative odds of a respondent choosing to rent a home, depending on the variable of interest.
+where the $\beta_n$ are the province, household income, factored size of household, and marital status parameter of the fitted model respectively, n represents the number of coefficients in our model, and x represents input values from observations (for example, x1 = Province, B1 = Province parameter). p(1-p) is the odds ratio, which can be used to compare the relative odds of a respondent choosing to rent a home, depending on the variable of interest. The logit defined above is the "natural logarithmic value of the odds in favor of a positive response"(Li, 1977). This means that that p is the probability of of the an event happening, in our case, the probability that an individual is a renter. This value is divided by the conditional probability that an individual is an owner(1-p). Putting all of this together, the above equations says that the probability p that a person is a renter depends on their marital status, household income, household size, and province of residence. Once we take the exponent of the above equation, we end up with:
+
+$$p/1-p = e^{\beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_3 + \beta_4 x_4 + .... +  \beta_n x_n} $$
 
 
 Through fitting a model using the chosen predictor variables, we are left with the given fitted logistic model with the following coefficients that are statistically significant at a 5% level:
